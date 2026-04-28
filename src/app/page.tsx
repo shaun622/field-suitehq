@@ -6,14 +6,18 @@ import { ProductCard } from "@/components/ProductCard";
 import { LeadForm } from "@/components/LeadForm";
 import { SimpleStrap } from "@/components/marketing/SimpleStrap";
 import { AppDashboardLive } from "@/components/marketing/AppDashboardLive";
-import { Phone } from "@/components/phones/Phone";
-import {
-  PhoneDashboard, PhoneQuote, PhonePipeline,
-  POOLMATE_DASH, FIREMATE_DASH,
-} from "@/components/phones/PhoneScreens";
+import { RealPhone } from "@/components/marketing/RealPhone";
 import { PRODUCTS, productBySlug } from "@/lib/products";
 
 const FEATURED_FOR_PARENT = productBySlug("treemate")!;
+
+// Three products picked for visual variety in the hero phone trio:
+// red, green and amber accents on real mobile screenshots.
+const HERO_PRODUCTS = [
+  productBySlug("firemate")!,
+  productBySlug("pestmate")!,
+  productBySlug("locksmithmate")!,
+];
 
 export default function Home() {
   return (
@@ -61,17 +65,24 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Floating phones — three layered, themed differently */}
-          <div className="lg:col-span-5 relative h-[420px] sm:h-[520px] lg:h-[640px] hidden md:block">
-            <div className="absolute right-0 top-4 theme-treemate" style={{ transform: "rotate(6deg)" }}>
-              <Phone width={250} height={520}><PhoneQuote /></Phone>
-            </div>
-            <div className="absolute left-2 top-32 theme-poolmate" style={{ transform: "rotate(-5deg)" }}>
-              <Phone width={230} height={480}><PhoneDashboard copy={POOLMATE_DASH} /></Phone>
-            </div>
-            <div className="absolute left-24 bottom-0 theme-firemate" style={{ transform: "rotate(2deg)" }}>
-              <Phone width={220} height={460}><PhoneDashboard copy={FIREMATE_DASH} /></Phone>
-            </div>
+          {/* Three real product screenshots, layered. Themed differently
+              for visual variety (red / green / amber). */}
+          <div className="lg:col-span-5 relative h-[440px] sm:h-[540px] lg:h-[680px] hidden md:block">
+            {HERO_PRODUCTS[0].screenshots?.mobile && (
+              <div className="absolute right-0 top-2" style={{ transform: "rotate(5deg)" }}>
+                <RealPhone shot={HERO_PRODUCTS[0].screenshots.mobile} width={260} />
+              </div>
+            )}
+            {HERO_PRODUCTS[1].screenshots?.mobile && (
+              <div className="absolute left-0 top-24 lg:top-28" style={{ transform: "rotate(-6deg)" }}>
+                <RealPhone shot={HERO_PRODUCTS[1].screenshots.mobile} width={240} />
+              </div>
+            )}
+            {HERO_PRODUCTS[2].screenshots?.mobile && (
+              <div className="absolute left-32 lg:left-40 bottom-0" style={{ transform: "rotate(2deg)" }}>
+                <RealPhone shot={HERO_PRODUCTS[2].screenshots.mobile} width={230} />
+              </div>
+            )}
           </div>
         </div>
 

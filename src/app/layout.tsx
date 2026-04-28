@@ -1,12 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Fraunces } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
+// Inter handles every face — body, display, italic accents.
+// Italic emphasis on hero headlines uses Inter's italic (sober, modern)
+// rather than a serif display face.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
 const jetbrains = JetBrains_Mono({
@@ -14,14 +18,6 @@ const jetbrains = JetBrains_Mono({
   variable: "--font-mono",
   display: "swap",
   weight: ["400", "500", "600"],
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-  weight: ["500", "600", "700"],
-  style: ["italic", "normal"],
 });
 
 export const metadata: Metadata = {
@@ -85,7 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrains.variable} ${fraunces.variable}`}
+      className={`${inter.variable} ${jetbrains.variable}`}
       suppressHydrationWarning
     >
       <head>

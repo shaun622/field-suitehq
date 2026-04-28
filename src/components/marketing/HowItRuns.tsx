@@ -23,8 +23,11 @@ export function HowItRuns({
   product,
   headline,
   eyebrow = "How a job runs",
-  strapChip = "SIMPLE CRM + JOB MANAGEMENT FOR THE TRADES",
+  strapChip,
 }: Props) {
+  // Default chip is per-trade so each product page says "for [your trade]"
+  // rather than the generic family-level line.
+  const chip = strapChip ?? `SIMPLE CRM + JOB MANAGEMENT FOR ${product.industryShort.toUpperCase()}`;
   const h = headline ?? (
     <>
       From job to PDF, in{" "}
@@ -44,7 +47,7 @@ export function HowItRuns({
         <div className="max-w-3xl mx-auto text-center mb-8">
           <span className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[.18em] uppercase px-2.5 py-1 rounded-full bg-[rgb(var(--surface-card))] dark:bg-white/[.05] border border-[rgb(var(--line))] dark:border-white/[.08] text-[rgb(var(--ink-3))]">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: product.brandHex }} aria-hidden />
-            {strapChip}
+            {chip}
           </span>
 
           <div className="eyebrow justify-center mt-5 mb-4">{eyebrow}</div>

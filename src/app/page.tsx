@@ -33,12 +33,12 @@ export default function Home() {
             </div>
 
             <RotatingHeadline
-              prefix="One platform."
-              suffix="Quote, schedule, invoice. Get paid before you leave the driveway."
+              prefix="Built for"
+              suffix="Quote, schedule, invoice and get paid. From your phone."
             />
 
             <p className="mt-6 text-lg lg:text-xl text-[rgb(var(--ink-2))] leading-relaxed max-w-2xl">
-              An app per trade. Same engine, different language.
+              Each app is its own thing. Pre-loaded for the work you actually do, not a generic CRM you have to bend.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -106,7 +106,7 @@ export default function Home() {
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Built around one trade. Its standards, its hazards, its language. No custom-field hacks.
+              Each app stands alone. Built around one trade. Pre-loaded for the work. No platform to learn.
             </p>
           </div>
 
@@ -138,7 +138,7 @@ export default function Home() {
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Same loop, every trade. One screen.
+              First call to getting paid. The whole loop, in your trade&apos;s app.
             </p>
           </div>
 
@@ -190,21 +190,21 @@ export default function Home() {
                 Vertical, <em className="font-display italic font-semibold text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]" style={{ fontStyle: "italic" }}>not horizontal.</em>
               </h2>
               <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-                Generic field-service software treats every trade the same. We don't. Each FieldSuite app is built for one trade, by people who've worked it.
+                Generic field-service software pretends every trade is the same. It isn&apos;t. Each app is its own thing, built by someone who works your trade.
               </p>
             </div>
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { n: "01", title: "Pre-loaded for your trade",
                   body: "Equipment library, checklists, cert numbers, PDF templates. Set up before you log in." },
-                { n: "02", title: "One platform, one bill",
-                  body: "Pest + Fire + Hygiene? One login, one bill, one customer database. Most field apps make you stitch six tools together." },
+                { n: "02", title: "Speaks your language",
+                  body: "TreeMate talks AS 4373. FireMate talks BS 8214. PestMate talks BPCA. Not \"service business with extra steps\"." },
                 { n: "03", title: "Built by trade operators",
                   body: "TreeMate by an arborist. PestMate by a BPCA-registered tech. Not someone who Googled \"tree CRM\"." },
                 { n: "04", title: "Your brand on every PDF",
                   body: "Customer-facing docs carry your logo, your colours, your cert numbers. Not ours." },
                 { n: "05", title: "Offline-first",
-                  body: "Patchy 3G in a basement? Lift in a tower? Underground car park? The app keeps working. Syncs when you're back." },
+                  body: "Patchy 3G in a basement? Lift in a tower? Underground car park? It keeps working. Syncs when you're back." },
                 { n: "06", title: "Customer portal, included",
                   body: "Clients log in, see history, download reports. Not a $20/mo bolt-on." },
               ].map((b) => (
@@ -300,7 +300,7 @@ export default function Home() {
                 Then a pool tech mate said &ldquo;do mine next.&rdquo; Then a fire-safety engineer. Then a pest controller. So we ship a trade-specific app instead of a bloated CRM.
               </p>
               <p className="text-[rgb(var(--ink))] font-medium">
-                Same engine underneath. Different language on top. <em>Your</em> trade isn&apos;t &ldquo;service business with extra steps&rdquo;.
+                Each app stands alone. Different language, different standards, different builders. <em>Your</em> trade isn&apos;t &ldquo;service business with extra steps&rdquo;.
               </p>
             </div>
           </div>

@@ -11,7 +11,7 @@ export function SimpleStrap({ variant = "parent", className, children }: Props) 
     children ??
     (variant === "parent"
       ? "Simple CRM + job management for the trades."
-      : "Simple CRM + job management — built for one trade.");
+      : "Simple CRM + job management for one trade.");
 
   return (
     <div

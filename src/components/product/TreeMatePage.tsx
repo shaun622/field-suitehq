@@ -33,7 +33,7 @@ export function TreeMatePage({ product }: { product: Product }) {
             </h1>
 
             <p className="mt-7 text-lg lg:text-xl text-[rgb(var(--ink-2))] leading-relaxed max-w-2xl">
-              TreeMate is the field-first CRM + job-management app for Aussie arborists. Site photos, AS 4373 line items, hazard tags, customer portal &mdash; tap, tap, send. Quote, accept, deposit, scheduled. All before you've reversed out.
+              TreeMate is the field-first CRM for Aussie arborists. Site photos, AS 4373 line items, hazard tags, customer portal. Quote sent before you&apos;ve reversed out.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -90,7 +90,7 @@ export function TreeMatePage({ product }: { product: Product }) {
               An app for tree work. <em className="font-display italic font-semibold text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]" style={{ fontStyle: "italic" }}>Not a generic CRM with custom fields.</em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Every screen designed for one trade. Every field, every checklist, every PDF — pre-loaded for the work you actually do.
+              Every screen, field, checklist and PDF pre-loaded for the work you actually do.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ export function TreeMatePage({ product }: { product: Product }) {
         bullets={[
           "Branded mobile-first quote link (not a PDF)",
           "Photos of your customer's actual trees",
-          "One green ACCEPT button — deposit handled inline",
+          "One green ACCEPT button. Deposit handled inline.",
         ]}
         phone={<Phone width={290} height={600}><PhonePortal /></Phone>}
       />
@@ -168,11 +168,11 @@ export function TreeMatePage({ product }: { product: Product }) {
 
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { title: "AS 4373 prune codes", body: "Crown lift, crown reduction, formative prune, deadwooding — all in the dropdown, with the right vocabulary on the customer-facing report." },
+              { title: "AS 4373 prune codes", body: "Crown lift, crown reduction, formative prune, deadwooding. All in the dropdown, with the right vocabulary on the customer-facing report." },
               { title: "Hazard tags first-class", body: "Power lines, structures, heritage trees, slopes, confined space. Multi-select on the site, surfaced on every related document." },
               { title: "EWP, crane, chipper rates", body: "Equipment library priced in AUD by hour. Cat 2 crew flag. No 'custom field' required to handle the basics." },
-              { title: "Heritage & council fields", body: "Strata, council, roadside, rural — site-type baked in. Permit numbers, TPO references, you know the drill." },
-              { title: "Recurring maintenance", body: "Hedge schedules, formative prune cycles, seasonal contracts — auto-projected onto the calendar." },
+              { title: "Heritage & council fields", body: "Strata, council, roadside, rural site types baked in. Permit numbers, TPO references, you know the drill." },
+              { title: "Recurring maintenance", body: "Hedge schedules, formative prune cycles, seasonal contracts. Auto-projected onto the calendar." },
               { title: "Photo evidence by tag", body: "Before / during / after / hazard / stump / equipment. Tagged at upload. Sortable in the customer portal." },
             ].map((c) => (
               <div key={c.title} className="card p-5">
@@ -206,7 +206,7 @@ export function TreeMatePage({ product }: { product: Product }) {
               <div className="relative">
                 <div className="font-mono text-[11px] tracking-[.2em] uppercase text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]">FROM THE BUCKET</div>
                 <div className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed italic">
-                  &ldquo;Every screen in TreeMate went through me halfway up a Eucalypt. If it didn't survive a wet day in the bucket — gloves on, sap on the screen, customer texting — it didn't ship.&rdquo;
+                  &ldquo;Every screen went through me halfway up a Eucalypt. If it didn&apos;t survive a wet day in the bucket, it didn&apos;t ship.&rdquo;
                 </div>
                 <div className="mt-5 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl grid place-items-center text-white font-extrabold"
@@ -300,7 +300,7 @@ export function TreeMatePage({ product }: { product: Product }) {
               </em>.
             </h2>
             <p className="mt-4 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Drop your details. We'll spin up a TreeMate account pre-loaded with your equipment library and AS 4373 templates, and walk you through one real quote.
+              14-day TreeMate account, pre-loaded with your equipment library and AS 4373 templates.
             </p>
           </div>
           <LeadForm product={product} />

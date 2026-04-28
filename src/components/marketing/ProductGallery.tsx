@@ -31,7 +31,7 @@ const DEFAULT_HEADINGS: Partial<Record<Product["slug"], { eyebrow: string; headl
         </em>
       </>
     ),
-    intro: "Door register, full 71-point assessment, site-level service record, premises management — all running on the same handset on the same site visit.",
+    intro: "Door register, full 71-point assessment, site-level service record, premises management. All on the same handset on the same site visit.",
   },
 };
 

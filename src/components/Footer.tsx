@@ -10,8 +10,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-4">
             <Wordmark markSize={26} />
             <p className="mt-4 text-sm leading-relaxed max-w-sm">
-              Simple CRM and job management for the trades. Six dedicated apps, one trade each.
-              Built mobile, priced for owner-operators, opinionated about the work you actually do.
+              Trade-specific CRM and job management. Built mobile, priced for owner-operators.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <span className="aus-badge">UK + AU</span>
@@ -66,7 +65,7 @@ export function Footer() {
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-[rgb(var(--ink-3))]">
           <div className="font-mono tracking-[.04em]">
-            © FieldSuite {new Date().getFullYear()} · FieldMate · 6 apps · 1 platform
+            © FieldSuite {new Date().getFullYear()}
           </div>
           <div className="font-mono tracking-[.18em] uppercase">
             v2.0 · UK + AU

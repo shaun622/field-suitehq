@@ -34,11 +34,11 @@ export default function Home() {
 
             <RotatingHeadline
               prefix="One platform."
-              suffix="Quote, schedule, invoice and get paid — from your phone, before you've left the driveway."
+              suffix="Quote, schedule, invoice. Get paid before you leave the driveway."
             />
 
             <p className="mt-6 text-lg lg:text-xl text-[rgb(var(--ink-2))] leading-relaxed max-w-2xl">
-              FieldSuite ships purpose-built CRM and job-management apps for the trades that get short-changed by generic software. Six dedicated apps, one trade each &mdash; same engine, same look, six different industries.
+              An app per trade. Same engine, different language.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -100,13 +100,13 @@ export default function Home() {
           <div className="max-w-3xl">
             <div className="eyebrow mb-4">The lineup</div>
             <h2 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-[rgb(var(--ink))]">
-              Six trades.{" "}
+              An app{" "}
               <em className="font-display italic font-semibold text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]" style={{ fontStyle: "italic" }}>
-                Six dedicated apps.
+                per trade.
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Each FieldSuite app is built around one trade — its standards, its hazards, its terminology, its pricing reality. No &ldquo;custom field&rdquo; hacks. No buttons labelled in someone else's language.
+              Built around one trade. Its standards, its hazards, its language. No custom-field hacks.
             </p>
           </div>
 
@@ -138,7 +138,7 @@ export default function Home() {
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Whatever you do — chainsaws, pool chemicals, fire-doors, bait stations, deep-cleans, lock cylinders — the loop is the same. FieldSuite runs it from one screen.
+              Same loop, every trade. One screen.
             </p>
           </div>
 
@@ -196,7 +196,7 @@ export default function Home() {
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { n: "01", title: "Pre-loaded for your trade",
-                  body: "Equipment library, checklists, cert numbers, PDF templates — all set up before you log in." },
+                  body: "Equipment library, checklists, cert numbers, PDF templates. Set up before you log in." },
                 { n: "02", title: "One platform, one bill",
                   body: "Pest + Fire + Hygiene? One login, one bill, one customer database. Most field apps make you stitch six tools together." },
                 { n: "03", title: "Built by trade operators",
@@ -231,7 +231,7 @@ export default function Home() {
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Same simple plans across every FieldSuite app. From $29/mo. FireMate runs $49/mo because the BS 8214 register storage costs us more.
+              Same plans, every app. From $29/mo.
             </p>
           </div>
 
@@ -291,16 +291,16 @@ export default function Home() {
             </h2>
             <div className="mt-6 space-y-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
               <p>
-                FieldSuite started with one app. The founder spent 17 years up trees with a chainsaw, then spent two more years swearing at off-the-shelf field-service software at the kitchen table at 9pm.
+                Started with one app. The founder spent 17 years up trees with a chainsaw, then two more years swearing at generic field-service software at 9pm.
               </p>
               <p>
-                The first prototype was sketched on a phone halfway up a Spotted Gum. It still runs the same way — gloved-thumb friendly, every screen.
+                Sketched the first prototype on a phone halfway up a Spotted Gum. It still runs the same way. Gloved-thumb friendly, every screen.
               </p>
               <p>
-                Then a pool tech mate said &ldquo;do mine next.&rdquo; Then a fire-safety engineer. Then a pest controller. So instead of one bloated CRM with custom fields, we ship a dedicated app per trade.
+                Then a pool tech mate said &ldquo;do mine next.&rdquo; Then a fire-safety engineer. Then a pest controller. So we ship a trade-specific app instead of a bloated CRM.
               </p>
               <p className="text-[rgb(var(--ink))] font-medium">
-                Same engine underneath. Same opinionated approach. Different language and standards on top &mdash; because <em>your</em> trade isn't just &ldquo;service business with extra steps.&rdquo;
+                Same engine underneath. Different language on top. <em>Your</em> trade isn&apos;t &ldquo;service business with extra steps&rdquo;.
               </p>
             </div>
           </div>
@@ -312,10 +312,10 @@ export default function Home() {
                 <div className="font-mono text-[11px] tracking-[.2em] uppercase text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]">FieldSuite · numbers</div>
                 <div className="mt-6 grid grid-cols-2 gap-y-6 gap-x-4">
                   {[
-                    { n: "6",     l: "vertical apps live or in beta" },
                     { n: "17yr",  l: "average founder time on the tools" },
-                    { n: "AU+UK", l: "markets shipping today" },
                     { n: "<60s",  l: "median time to send a quote" },
+                    { n: "AU+UK", l: "markets shipping today" },
+                    { n: "$0",    l: "extra per seat" },
                   ].map((s) => (
                     <div key={s.l}>
                       <div className="text-4xl font-extrabold text-[rgb(var(--ink))] tracking-tight font-display">{s.n}</div>
@@ -347,7 +347,7 @@ export default function Home() {
               </em>
             </h2>
             <p className="mt-4 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Drop your details. We'll set you up with a 14-day trial pre-loaded with your trade's templates &mdash; no credit card, no boilerplate sales call.
+              14-day trial, pre-loaded with your trade&apos;s templates. No credit card. No sales call.
             </p>
           </div>
 

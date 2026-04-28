@@ -23,7 +23,7 @@ export function HowItRuns({
   product,
   headline,
   eyebrow = "How a job runs",
-  strapChip = "SIMPLE CRM + JOB MANAGEMENT — FOR ONE TRADE",
+  strapChip = "SIMPLE CRM + JOB MANAGEMENT FOR THE TRADES",
 }: Props) {
   const h = headline ?? (
     <>
@@ -54,7 +54,7 @@ export function HowItRuns({
           </h2>
 
           <p className="mt-5 text-base lg:text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-            This is the real <span className="font-semibold text-[rgb(var(--ink))]">{product.name}</span> dashboard, running live. Every tab is clickable — try the Schedule, Clients, Jobs, Quotes, Invoices and Analytics views.
+            The real <span className="font-semibold text-[rgb(var(--ink))]">{product.name}</span> dashboard, running live. Click any tab.
           </p>
         </div>
 

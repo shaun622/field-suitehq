@@ -34,7 +34,7 @@ const HERO: Record<Product["slug"], HeroBlock | undefined> = {
     eyebrow: "POOLMATE · FOR POOL TECHS",
     hLead: <>Pool service rounds, </>,
     hAccent: "on autopilot.",
-    lede: "Chemical readings, dosing log, before/after photos. The whole round on your phone. Recurring contracts schedule themselves; clients get a branded PDF after every visit.",
+    lede: "Chemical readings, dosing log, before and after photos. Whole round on your phone. Recurring contracts schedule themselves. Branded PDF after every visit.",
     meta: ["14-day free trial · No card", "Cancel anytime", "PWTAG-aware"],
     ghostCta: "See a sample service report",
   },
@@ -42,7 +42,7 @@ const HERO: Record<Product["slug"], HeroBlock | undefined> = {
     eyebrow: "FIREMATE · FOR FIRE-DOOR SURVEYORS",
     hLead: <>Fire-door inspections </>,
     hAccent: "your assessor will sign.",
-    lede: "Run BS 8214-aligned fire-door surveys from a tablet. 71 inspection points per door, photo evidence on every fail, dual digital sign-off, branded PDF in the responsible person's inbox before you leave the building.",
+    lede: "BS 8214 fire-door surveys on a tablet. 71 points per door. Photo evidence on every fail. Dual sign-off. Branded PDF in the RP&apos;s inbox before you leave the building.",
     meta: ["14-day free trial · No card", "Cancel anytime", "BS 8214 ready"],
     ghostCta: "Download a sample report",
   },
@@ -50,7 +50,7 @@ const HERO: Record<Product["slug"], HeroBlock | undefined> = {
     eyebrow: "PESTMATE · FOR PEST CONTROLLERS",
     hLead: <>The pest control app </>,
     hAccent: "that does the paperwork.",
-    lede: "Run your pest round from your phone. Bait points, HSE numbers, photo evidence, technician sign-off — every visit becomes a branded PDF before the van leaves the property. Built for BPCA-registered techs and the businesses they run.",
+    lede: "Pest round on your phone. Bait points, HSE numbers, photo evidence, tech sign-off. Branded PDF before the van leaves. Built for BPCA-registered techs.",
     meta: ["14-day free trial · No card", "Cancel anytime", "BPCA-aware"],
     ghostCta: "Watch a 90-second demo",
   },
@@ -58,7 +58,7 @@ const HERO: Record<Product["slug"], HeroBlock | undefined> = {
     eyebrow: "HYGIENEMATE · FOR DEEP-CLEAN CREWS",
     hLead: <>The deep-clean app </>,
     hAccent: "your customers actually open.",
-    lede: "Photo-stamped before/after, technician signature, every chemical logged with batch and quantity. Built for kitchen extraction, washroom service, and the audit trail your customers' food-safety officers ask for.",
+    lede: "Before and after photos. Tech signature. Every chemical logged with batch and quantity. Kitchen extraction, washrooms, deep cleans. The audit trail FSA inspectors actually want.",
     meta: ["14-day free trial · No card", "Cancel anytime", "BICSc-aware"],
     ghostCta: "See a sample report",
   },
@@ -66,7 +66,7 @@ const HERO: Record<Product["slug"], HeroBlock | undefined> = {
     eyebrow: "LOCKSMITHMATE · FOR MOBILE LOCKSMITHS",
     hLead: <>Run your locksmith round </>,
     hAccent: "from the van.",
-    lede: "Quote on the phone. Send the customer your photo and DBS card before you arrive. Photo of the work, digital invoice, card-on-file before the van leaves the kerb. Built for mobile locksmiths who hate 'I'll send the invoice later'.",
+    lede: "Quote on the phone. Send your photo and DBS card before you arrive. Photo of the work, digital invoice, card on file before the van leaves. Built for locksmiths who hate &lsquo;I&apos;ll send the invoice later&rsquo;.",
     meta: ["14-day free trial · No card", "Cancel anytime", "MLA-aware · DBS-ready"],
     ghostCta: "See a sample job sheet",
   },
@@ -199,7 +199,7 @@ export function GenericProductPage({ product }: { product: Product }) {
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Every screen designed for one trade. Every field, every checklist, every PDF — pre-loaded for the work you actually do.
+              Every screen, field, checklist and PDF pre-loaded for the work you actually do.
             </p>
           </div>
 
@@ -229,7 +229,7 @@ export function GenericProductPage({ product }: { product: Product }) {
               Quote. Job. Invoice. <em className="font-display italic font-semibold text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]" style={{ fontStyle: "italic" }}>Paid.</em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              The same loop runs every job. From the first call to the final invoice, every step is in the app — no spreadsheet, no group SMS.
+              First call to final invoice. Every step in the app. No spreadsheet, no group SMS.
             </p>
           </div>
 
@@ -350,7 +350,7 @@ export function GenericProductPage({ product }: { product: Product }) {
               )}
             </h2>
             <p className="mt-4 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Drop your details. We'll spin up a {product.name} sandbox pre-loaded with your trade's templates &mdash; no boilerplate sales call.
+              14-day {product.name} sandbox, pre-loaded with your trade&apos;s templates. No sales call.
             </p>
           </div>
           <LeadForm product={product} />

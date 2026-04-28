@@ -459,6 +459,7 @@ function ClientsView({ data, accent }: { data: ClientRow[]; accent: string }) {
                 key={i}
                 type="button"
                 onClick={() => setSel(i)}
+                className={`dash-clickrow${i === sel ? " is-selected" : ""}`}
                 style={{
                   all: "unset",
                   cursor: "pointer",
@@ -629,6 +630,7 @@ function QuotesView({ rows, detail, labels, accent }: {
                 key={q.ref}
                 type="button"
                 onClick={() => setSelRef(q.ref)}
+                className={`dash-clickrow${q.ref === selRef ? " is-selected" : ""}`}
                 style={{
                   all: "unset",
                   cursor: "pointer",

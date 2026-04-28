@@ -512,6 +512,75 @@ section[id] { scroll-margin-top: 96px; }
   background: rgb(var(--brand-900) / .4);
 }
 
+/* ----- Interaction affordances on the live dashboard preview ----- */
+/* Tab nav: cursor + subtle hover bg so the buttons read as buttons. */
+.app-row-tabs button {
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color .15s var(--ease-out-expo), color .15s var(--ease-out-expo);
+}
+.app-row-tabs button:hover {
+  background: rgb(var(--surface-3));
+  color: rgb(var(--ink));
+}
+:root.dark .app-row-tabs button:hover {
+  background: rgba(255,255,255,.05);
+  color: #fff;
+}
+
+/* Master/detail clickable rows (Clients, Quotes). The selected row's
+   accent-tint background already comes through inline; this just gives
+   non-selected rows a visible hover state. */
+.dash-clickrow {
+  transition: background-color .15s var(--ease-out-expo);
+}
+.dash-clickrow:not(.is-selected):hover {
+  background: rgb(var(--surface-3)) !important;
+}
+:root.dark .dash-clickrow:not(.is-selected):hover {
+  background: rgba(255,255,255,.04) !important;
+}
+
+/* Floating "try it" hint above the tab row — gentle bounce to catch the eye */
+.demo-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)));
+  color: #fff;
+  box-shadow: 0 8px 24px rgb(var(--brand-500) / .35);
+  position: relative;
+}
+.demo-hint::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)));
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+  z-index: -1;
+}
+@keyframes demo-hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.demo-hint-wrap {
+  animation: demo-hint-bounce 2.4s var(--ease-out-expo) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-hint-wrap { animation: none; }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none !important; }

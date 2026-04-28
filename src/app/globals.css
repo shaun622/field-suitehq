@@ -26,7 +26,7 @@
   --brand-950:   5  46  22;
 
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
-  /* --font-display is supplied by next/font (Newsreader). Set on <html>. */
+  /* --font-display is supplied by next/font (Montserrat). Set on <html>. */
 
   /* ----- LIGHT mode surface tokens (default) ----- */
   /* Warm off-white per handoff (oklch 0.985 0.003 80 ≈ #f8f6ef) */
@@ -124,7 +124,7 @@ body {
 
 .tnum { font-variant-numeric: tabular-nums; }
 .font-mono { font-feature-settings: "calt" 0; }
-.font-display { font-family: var(--font-display, "Newsreader", "Georgia", serif); font-optical-sizing: auto; }
+.font-display { font-family: var(--font-display, "Montserrat", "Inter", system-ui, sans-serif); }
 
 /* ----- Wordmark (parent + product) ----- */
 .fm-wordmark {

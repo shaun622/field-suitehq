@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
+import { Inter, JetBrains_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,14 +17,14 @@ const jetbrains = JetBrains_Mono({
   weight: ["400", "500", "600"],
 });
 
-// Newsreader: modern serif used for italic accents in hero headlines,
-// pricing numbers, and the analytics revenue label. Restrained curves
-// (think editorial digital), not playful.
-const newsreader = Newsreader({
+// Montserrat: geometric sans for italic accents in hero headlines,
+// pricing numerals, and analytics chart labels. Italic is a tidy
+// geometric slant — confident, not bouncy.
+const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   style: ["normal", "italic"],
 });
 
@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrains.variable} ${newsreader.variable}`}
+      className={`${inter.variable} ${jetbrains.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
       <head>

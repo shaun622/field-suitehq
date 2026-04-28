@@ -46,8 +46,8 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "IBM Plex Mono", "ui-monospace", "monospace"],
-        // Display alias — resolves to Inter via the --font-display CSS var.
-        display: ["var(--font-display)", "Inter", "system-ui", "sans-serif"],
+        // Display: Newsreader (serif) for italic accents and large numerals.
+        display: ["var(--font-display)", "Newsreader", "Georgia", "serif"],
       },
       backgroundImage: {
         "grad-brand": "linear-gradient(135deg, rgb(var(--brand-400)) 0%, rgb(var(--brand-700)) 100%)",

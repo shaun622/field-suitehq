@@ -26,10 +26,7 @@
   --brand-950:   5  46  22;
 
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Display font alias. Was Fraunces; now Inter — italics in hero headlines
-     render as Inter italic (clean, modern) rather than as a serif accent. */
-  --font-display: var(--font-sans);
+  /* --font-display is supplied by next/font (Newsreader). Set on <html>. */
 
   /* ----- LIGHT mode surface tokens (default) ----- */
   /* Warm off-white per handoff (oklch 0.985 0.003 80 ≈ #f8f6ef) */
@@ -127,7 +124,7 @@ body {
 
 .tnum { font-variant-numeric: tabular-nums; }
 .font-mono { font-feature-settings: "calt" 0; }
-.font-display { font-family: var(--font-display, "Inter", system-ui, sans-serif); }
+.font-display { font-family: var(--font-display, "Newsreader", "Georgia", serif); font-optical-sizing: auto; }
 
 /* ----- Wordmark (parent + product) ----- */
 .fm-wordmark {

@@ -5,7 +5,7 @@ import { RotatingHeadline } from "@/components/RotatingHeadline";
 import { ProductCard } from "@/components/ProductCard";
 import { LeadForm } from "@/components/LeadForm";
 import { SimpleStrap } from "@/components/marketing/SimpleStrap";
-import { DesktopDashboard } from "@/components/marketing/DesktopDashboard";
+import { AppDashboardLive } from "@/components/marketing/AppDashboardLive";
 import { Phone } from "@/components/phones/Phone";
 import {
   PhoneDashboard, PhoneQuote, PhonePipeline,
@@ -166,14 +166,16 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Featured dashboard preview (TreeMate) */}
-          <div className="mt-16 max-w-5xl mx-auto">
+          {/* Featured interactive dashboard preview (TreeMate) */}
+          <div className="mt-16 max-w-6xl mx-auto">
             <div className="text-center mb-6">
               <span className="font-mono text-[10px] tracking-[.18em] uppercase text-[rgb(var(--ink-3))]">
-                Live preview · TreeMate dashboard
+                Live preview · TreeMate dashboard · click any tab
               </span>
             </div>
-            <DesktopDashboard product={FEATURED_FOR_PARENT} />
+            <div className="rounded-2xl border border-[rgb(var(--line))] dark:border-white/[.08] bg-[rgb(var(--surface))] dark:bg-[#0a0e14] shadow-2xl overflow-hidden">
+              <AppDashboardLive product={FEATURED_FOR_PARENT} />
+            </div>
           </div>
         </div>
       </section>

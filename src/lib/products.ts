@@ -26,6 +26,29 @@ export interface PricingTier {
   popular?: boolean;
 }
 
+/**
+ * Real product screenshot, light + dark variants.
+ * Paths are public-relative (e.g. "/screenshots/desktop/dashboard-pestmate-light.png").
+ * `cropTopPx` strips the source image's top chrome so the customer-tenant
+ * branding (AWC Group mark + division pills) doesn't appear on the marketing site.
+ */
+export interface Screenshot {
+  light: string;
+  dark?: string;
+  /** Pixels to clip from the top of the source image */
+  cropTopPx?: number;
+  /** Aspect ratio hint; helps reserve layout space */
+  width: number;
+  height: number;
+}
+
+export interface ProductScreenshots {
+  desktop?: Screenshot;
+  mobile?: Screenshot;
+  /** Optional gallery of deeper product detail screens */
+  gallery?: { src: string; caption: string; width: number; height: number }[];
+}
+
 export interface Product {
   slug: ProductSlug;
   name: string;
@@ -59,6 +82,8 @@ export interface Product {
   faq: { q: string; a: string }[];
   /** 3-bullet pitch for the parent-page card */
   bullets: [string, string, string];
+  /** Optional real-product screenshots; falls back to synthetic mocks when absent */
+  screenshots?: ProductScreenshots;
 }
 
 const tier = (pop: boolean | undefined, name: string, price: string, per: string, blurb: string, features: string[]): PricingTier => ({
@@ -272,6 +297,24 @@ export const PRODUCTS: Product[] = [
       "Assessor + RP dual sign-off",
       "Insurer-ready compliance PDF",
     ],
+    screenshots: {
+      desktop: {
+        light: "/screenshots/desktop/dashboard-firemate-light.png",
+        // No dark desktop shot yet — light renders in both modes for now.
+        cropTopPx: 280, width: 2560, height: 1600,
+      },
+      mobile: {
+        light: "/screenshots/mobile/dashboard-firemate-light.png",
+        dark:  "/screenshots/mobile/dashboard-firemate-dark.png",
+        cropTopPx: 140, width: 780, height: 1688,
+      },
+      gallery: [
+        { src: "/screenshots/fire/door-detail-fail.png",         caption: "Per-door history with last-pass / last-fail badges", width: 780, height: 1688 },
+        { src: "/screenshots/fire/assessment-in-progress.png",   caption: "BS 8214:2016 71-point assessment in progress",       width: 780, height: 1688 },
+        { src: "/screenshots/fire/job-report.png",               caption: "Site-level service record across every door",         width: 780, height: 1688 },
+        { src: "/screenshots/fire/premises-detail-light.png",    caption: "Premises register with re-inspection cadence",        width: 780, height: 1688 },
+      ],
+    },
   },
 
   /* ------------------- PESTMATE — UK ------------------- */
@@ -330,6 +373,18 @@ export const PRODUCTS: Product[] = [
       "Recurring contracts auto-projected",
       "Branded report emailed same day",
     ],
+    screenshots: {
+      desktop: {
+        light: "/screenshots/desktop/dashboard-pestmate-light.png",
+        dark:  "/screenshots/desktop/dashboard-pestmate-dark.png",
+        cropTopPx: 280, width: 2560, height: 1600,
+      },
+      mobile: {
+        light: "/screenshots/mobile/dashboard-pestmate-light.png",
+        dark:  "/screenshots/mobile/dashboard-pestmate-dark.png",
+        cropTopPx: 140, width: 780, height: 1688,
+      },
+    },
   },
 
   /* ------------------- HYGIENEMATE — UK ------------------- */
@@ -388,6 +443,14 @@ export const PRODUCTS: Product[] = [
       "Chemicals logged with batch numbers",
       "Recurring kitchen / washroom schedule",
     ],
+    screenshots: {
+      // No desktop screenshot for HygieneMate yet — synthetic dashboard renders.
+      mobile: {
+        light: "/screenshots/mobile/dashboard-hygienemate-light.png",
+        dark:  "/screenshots/mobile/dashboard-hygienemate-dark.png",
+        cropTopPx: 140, width: 780, height: 1688,
+      },
+    },
   },
 
   /* ------------------- LOCKSMITHMATE — UK ------------------- */
@@ -446,6 +509,13 @@ export const PRODUCTS: Product[] = [
       "BS 3621 / 8621 stock list",
       "Photo + invoice before leaving site",
     ],
+    screenshots: {
+      mobile: {
+        light: "/screenshots/mobile/dashboard-locksmithmate-light.png",
+        dark:  "/screenshots/mobile/dashboard-locksmithmate-dark.png",
+        cropTopPx: 140, width: 780, height: 1688,
+      },
+    },
   },
 ];
 

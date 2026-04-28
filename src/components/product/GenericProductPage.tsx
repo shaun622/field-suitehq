@@ -3,6 +3,8 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { LeadForm } from "@/components/LeadForm";
 import { HowItRuns } from "@/components/marketing/HowItRuns";
+import { ProductGallery } from "@/components/marketing/ProductGallery";
+import { RealPhone } from "@/components/marketing/RealPhone";
 import { Phone } from "@/components/phones/Phone";
 import { PhoneJobs, PhoneQuote, PhonePipeline } from "@/components/phones/PhoneScreens";
 import { Product } from "@/lib/products";
@@ -139,14 +141,27 @@ export function GenericProductPage({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* Hero phone */}
+          {/* Hero phones — real mobile screenshot when available, synthetic as accent */}
           <div className="lg:col-span-5 relative h-[480px] sm:h-[560px] lg:h-[680px]">
-            <div className="absolute right-0 top-4 lg:right-4" style={{ transform: "rotate(4deg)" }}>
-              <Phone width={310} height={640}><PhoneQuote /></Phone>
-            </div>
-            <div className="absolute -left-2 bottom-4 hidden lg:block" style={{ transform: "rotate(-6deg)" }}>
-              <Phone width={240} height={500}><PhoneJobs /></Phone>
-            </div>
+            {product.screenshots?.mobile ? (
+              <>
+                <div className="absolute right-0 top-4 lg:right-4" style={{ transform: "rotate(4deg)" }}>
+                  <RealPhone shot={product.screenshots.mobile} width={300} />
+                </div>
+                <div className="absolute -left-2 bottom-4 hidden lg:block" style={{ transform: "rotate(-6deg)" }}>
+                  <Phone width={230} height={490}><PhoneJobs /></Phone>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="absolute right-0 top-4 lg:right-4" style={{ transform: "rotate(4deg)" }}>
+                  <Phone width={310} height={640}><PhoneQuote /></Phone>
+                </div>
+                <div className="absolute -left-2 bottom-4 hidden lg:block" style={{ transform: "rotate(-6deg)" }}>
+                  <Phone width={240} height={500}><PhoneJobs /></Phone>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -165,6 +180,9 @@ export function GenericProductPage({ product }: { product: Product }) {
 
       {/* HOW IT RUNS — directly under hero */}
       <HowItRuns product={product} />
+
+      {/* DEEP-SCREENS GALLERY — only renders if product has gallery shots */}
+      <ProductGallery product={product} />
 
       {/* FEATURES — 6 numbered cards */}
       <section id="features" className="py-24 lg:py-32 bg-[rgb(var(--surface))] dark:bg-[rgb(var(--surface-2))]">

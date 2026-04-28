@@ -1,11 +1,18 @@
 /**
- * DesktopDashboard — wide app-mock used inside the marketing pages.
- * Faithful port of the FieldSuite design handoff's <AppDashboard/>.
+ * DesktopDashboard — dashboard preview used inside the marketing pages.
  *
- * Themable per product via the .theme-<slug> CSS-var swap. Light/dark
- * surfaces follow the page-level theme (no own toggle); the dashboard
- * is just stylised marketing illustration — no real interaction.
+ * If `product.screenshots.desktop` is provided, renders the real product
+ * screenshot with the top tenant-bar cropped (so AWC Group branding from
+ * the source image isn't visible on the marketing site). Light + dark
+ * source images are both rendered into the DOM and toggled via Tailwind
+ * dark: utilities so SSR + theme toggle stay in sync without JS.
+ *
+ * If no screenshot is provided, falls back to the synthetic dashboard
+ * markup (used by TreeMate which is AU/AUD and has no real shot yet).
+ *
+ * Themable per product via the .theme-<slug> CSS-var swap.
  */
+import Image from "next/image";
 import { Product } from "@/lib/products";
 import { cn } from "@/lib/cn";
 
@@ -14,6 +21,48 @@ interface Props {
   /** Default copy varies per product. Override with `stats` to pin numbers. */
   stats?: Partial<Record<"jobsThisWeek" | "activeJobs" | "pendingQuotes" | "overdue", string>>;
   className?: string;
+}
+
+/** Render real product screenshot with tenant-chrome cropped off the top. */
+function RealDashboard({ product, className }: { product: Product; className?: string }) {
+  const shot = product.screenshots?.desktop;
+  if (!shot) return null;
+
+  const aspectAfterCrop = (shot.height - (shot.cropTopPx ?? 0)) / shot.width;
+
+  return (
+    <div
+      className={cn(`theme-${product.slug}`, "dash-frame select-none w-full", className)}
+      style={{
+        // Reserve layout space for the cropped image (preserves aspect ratio).
+        // Use padding-bottom percentage hack so it works without JS.
+        position: "relative",
+        paddingBottom: `${aspectAfterCrop * 100}%`,
+        overflow: "hidden",
+      }}
+    >
+      {/* LIGHT — visible by default, hidden when <html class="dark"> */}
+      <Image
+        src={shot.light}
+        alt={`${product.name} dashboard preview (light)`}
+        width={shot.width}
+        height={shot.height}
+        priority={false}
+        className="absolute inset-x-0 top-0 w-full h-auto select-none pointer-events-none block dark:hidden"
+        style={{ marginTop: `-${(shot.cropTopPx ?? 0) / shot.width * 100}%` }}
+      />
+      {/* DARK — falls back to light if no dark variant is available */}
+      <Image
+        src={shot.dark ?? shot.light}
+        alt={`${product.name} dashboard preview (dark)`}
+        width={shot.width}
+        height={shot.height}
+        priority={false}
+        className="absolute inset-x-0 top-0 w-full h-auto select-none pointer-events-none hidden dark:block"
+        style={{ marginTop: `-${(shot.cropTopPx ?? 0) / shot.width * 100}%` }}
+      />
+    </div>
+  );
 }
 
 const TAB_ICON: Record<string, React.ReactNode> = {
@@ -37,6 +86,11 @@ function TabIcon({ kind, className }: { kind: keyof typeof TAB_ICON; className?:
 }
 
 export function DesktopDashboard({ product, stats, className }: Props) {
+  // Real screenshot path takes precedence when available
+  if (product.screenshots?.desktop) {
+    return <RealDashboard product={product} className={className} />;
+  }
+
   const s = {
     jobsThisWeek: "6",
     activeJobs: "4",

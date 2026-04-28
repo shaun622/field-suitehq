@@ -1,0 +1,281 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Field Mate · global tokens
+   - Brand palette is CSS-variable driven; set on a wrapper to
+     re-theme any product page/section.
+   - Dark-first surface; .light flips a section to bone palette.
+   ============================================================ */
+
+:root {
+  /* TreePro forest-green by default at the root (parent leans green) */
+  --brand-50:  240 253 244;
+  --brand-100: 220 252 231;
+  --brand-200: 187 247 208;
+  --brand-300: 134 239 172;
+  --brand-400:  74 222 128;
+  --brand-500:  34 197  94;
+  --brand-600:  22 163  74;
+  --brand-700:  21 128  61;
+  --brand-800:  22 101  52;
+  --brand-900:  20  83  45;
+  --brand-950:   5  46  22;
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Per-product themes: wrap a page/section in .theme-<slug> to retheme. */
+.theme-treepro {
+  --brand-50:240 253 244; --brand-100:220 252 231; --brand-200:187 247 208;
+  --brand-300:134 239 172; --brand-400:74 222 128; --brand-500:34 197 94;
+  --brand-600:22 163 74; --brand-700:21 128 61; --brand-800:22 101 52;
+  --brand-900:20 83 45; --brand-950:5 46 22;
+}
+.theme-poolpro {
+  --brand-50:240 249 255; --brand-100:224 242 254; --brand-200:186 230 253;
+  --brand-300:125 211 252; --brand-400:56 189 248; --brand-500:14 165 233;
+  --brand-600:2 132 199; --brand-700:3 105 161; --brand-800:7 89 133;
+  --brand-900:12 74 110; --brand-950:8 47 73;
+}
+.theme-firepro {
+  --brand-50:254 242 242; --brand-100:254 226 226; --brand-200:254 202 202;
+  --brand-300:252 165 165; --brand-400:248 113 113; --brand-500:239 68 68;
+  --brand-600:220 38 38; --brand-700:185 28 28; --brand-800:153 27 27;
+  --brand-900:127 29 29; --brand-950:69 10 10;
+}
+.theme-pestpro {
+  --brand-50:240 253 244; --brand-100:220 252 231; --brand-200:187 247 208;
+  --brand-300:134 239 172; --brand-400:74 222 128; --brand-500:34 197 94;
+  --brand-600:22 163 74; --brand-700:21 128 61; --brand-800:22 101 52;
+  --brand-900:20 83 45; --brand-950:5 46 22;
+}
+.theme-hygienepro {
+  --brand-50:236 254 255; --brand-100:207 250 254; --brand-200:165 243 252;
+  --brand-300:103 232 249; --brand-400:34 211 238; --brand-500:6 182 212;
+  --brand-600:8 145 178; --brand-700:14 116 144; --brand-800:21 94 117;
+  --brand-900:22 78 99; --brand-950:8 51 68;
+}
+.theme-lockpro {
+  --brand-50:255 251 235; --brand-100:254 243 199; --brand-200:253 230 138;
+  --brand-300:252 211 77; --brand-400:251 191 36; --brand-500:245 158 11;
+  --brand-600:217 119 6; --brand-700:180 83 9; --brand-800:146 64 14;
+  --brand-900:120 53 15; --brand-950:69 26 3;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--font-sans, "Inter", system-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss01", "cv11";
+}
+
+body {
+  background: #07100a;
+  color: #efece4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: rgb(var(--brand-500) / .4); color: #fff; }
+
+.tnum { font-variant-numeric: tabular-nums; }
+.font-mono { font-feature-settings: "calt" 0; }
+
+/* ----- Wordmark (parent + product) ----- */
+.fm-wordmark {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 800; letter-spacing: -0.02em;
+}
+.fm-mark {
+  width: 1.1em; height: 1.1em;
+  background: linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-700)));
+  border-radius: 6px;
+  display: grid; place-items: center;
+  position: relative;
+  box-shadow: 0 4px 14px rgb(var(--brand-500) / .45);
+  overflow: hidden;
+}
+.fm-mark > svg {
+  width: 68%; height: 68%;
+  display: block;
+}
+/* Empty .fm-mark (no glyph child) — render a soft canopy stamp via gradient */
+.fm-mark:empty {
+  background-image:
+    radial-gradient(circle at 50% 38%, #ffffff66 0 22%, transparent 24%),
+    radial-gradient(circle at 30% 60%, #ffffff66 0 16%, transparent 18%),
+    radial-gradient(circle at 70% 60%, #ffffff66 0 16%, transparent 18%),
+    linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-700)));
+}
+.fm-wordmark-text {
+  background: linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-700)));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+
+/* ----- Canvas treatments ----- */
+.canvas-dusk {
+  background:
+    radial-gradient(circle at 20% 0%,  rgb(var(--brand-900) / .55), transparent 50%),
+    radial-gradient(circle at 90% 100%, rgba(7,16,10,.7), transparent 60%),
+    linear-gradient(180deg, #07100a 0%, #0c1812 100%);
+}
+.canvas-night {
+  background:
+    radial-gradient(circle at 50% -10%, rgb(var(--brand-500) / .18), transparent 60%),
+    linear-gradient(180deg, #050a07 0%, #07100a 100%);
+}
+.canvas-bone {
+  background:
+    radial-gradient(circle at 20% 0%, rgb(var(--brand-100) / .6), transparent 50%),
+    linear-gradient(180deg, #f7f6f2 0%, #efece4 100%);
+}
+
+/* Soft mesh halo for hero blocks */
+.halo {
+  position: absolute; inset: -10%;
+  background:
+    radial-gradient(circle at 30% 30%, rgb(var(--brand-500) / .18), transparent 50%),
+    radial-gradient(circle at 70% 80%, rgb(var(--brand-900) / .4), transparent 60%);
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+/* ----- Buttons ----- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border-radius: 999px;
+  font-weight: 700; font-size: 15px; letter-spacing: -0.01em;
+  transition: transform .2s var(--ease-out-expo), box-shadow .2s var(--ease-out-expo), background .2s ease, color .2s ease;
+  cursor: pointer; border: 0;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-700)));
+  color: #fff;
+  box-shadow: 0 8px 24px rgb(var(--brand-500) / .35), inset 0 1px 0 rgb(255 255 255 / .15);
+}
+.btn-primary:hover { box-shadow: 0 12px 32px rgb(var(--brand-500) / .45); }
+.btn-ghost {
+  background: rgba(255,255,255,.05);
+  color: #efece4;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.btn-ghost:hover { background: rgba(255,255,255,.08); }
+.btn-light {
+  background: #fff; color: #0c1812;
+}
+
+.eyebrow {
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 11px; letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgb(var(--brand-400));
+}
+
+/* Aussie-style mono badge */
+.aus-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  color: rgba(255,255,255,.78);
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+}
+.aus-badge::before {
+  content: ""; width: 8px; height: 8px;
+  background: rgb(var(--brand-400));
+  border-radius: 50%;
+}
+
+/* ----- Cards ----- */
+.card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 22px;
+  transition: transform .3s var(--ease-out-expo), border-color .3s var(--ease-out-expo), background .3s var(--ease-out-expo);
+}
+.card:hover { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.06); }
+.card-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 60px rgb(var(--brand-500) / .25);
+  border-color: rgb(var(--brand-500) / .35);
+}
+
+/* ----- Phone shell ----- */
+.phone {
+  position: relative;
+  background: #000;
+  border-radius: 44px;
+  padding: 6px;
+  box-shadow:
+    0 0 0 1.5px rgba(255,255,255,.08),
+    0 30px 80px rgba(0,0,0,.55),
+    0 8px 24px rgba(0,0,0,.45);
+}
+.phone-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  background: #07100a;
+  border-radius: 38px;
+  overflow: hidden;
+  color: #efece4;
+}
+.phone .notch {
+  position: absolute; top: 14px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 30px;
+  background: #000; border-radius: 18px;
+  z-index: 50;
+}
+.phone-inner.light { background: #f7f6f2; color: #0c1812; }
+
+/* Marquee track */
+.marquee-track { display: flex; gap: 48px; width: max-content; will-change: transform; }
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* Dotted divider */
+.divider-dots {
+  background-image: radial-gradient(circle, rgba(255,255,255,.18) 1px, transparent 1px);
+  background-size: 8px 8px;
+  background-position: 0 50%;
+  background-repeat: repeat-x;
+  height: 1px;
+}
+
+/* Photo placeholder */
+.photo-slot {
+  position: relative;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,.04) 0 12px,
+      rgba(255,255,255,.08) 12px 24px);
+  color: rgba(255,255,255,.65);
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 11px; letter-spacing: .02em;
+  display: flex; align-items: flex-end;
+  padding: 14px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+/* Anchored section spacing */
+section[id] { scroll-margin-top: 96px; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

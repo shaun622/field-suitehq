@@ -1,0 +1,13 @@
+# Cloudflare Pages redirects
+# Friendly product slugs and historical paths
+
+/treepro       /products/treepro/    301
+/poolpro       /products/poolpro/    301
+/firepro       /products/firepro/    301
+/pestpro       /products/pestpro/    301
+/hygienepro    /products/hygienepro/ 301
+/lockpro       /products/lockpro/    301
+
+/contact       /#contact             301
+/pricing       /#pricing             301
+/story         /#story               301

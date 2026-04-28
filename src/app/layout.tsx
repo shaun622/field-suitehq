@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,32 +16,42 @@ const jetbrains = JetBrains_Mono({
   weight: ["400", "500", "600"],
 });
 
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["500", "600", "700"],
+  style: ["italic", "normal"],
+});
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fieldmate.app"),
+  metadataBase: new URL("https://fieldsuite.app"),
   title: {
-    default: "Field Mate · Software for the people who do the work",
-    template: "%s · Field Mate",
+    default: "FieldSuite · Simple CRM + job management for the trades",
+    template: "%s · FieldSuite",
   },
   description:
-    "Field Mate ships purpose-built business apps for trades and field services — TreePro, PoolPro, FirePro, PestPro, HygienePro, LockPro. Quote, schedule, invoice and get paid from your phone.",
-  applicationName: "Field Mate",
+    "FieldSuite ships purpose-built CRM and job-management apps for trades — TreeMate, PoolMate, FireMate, PestMate, HygieneMate, LocksmithMate. One trade per app. Quote, schedule, invoice and get paid from your phone.",
+  applicationName: "FieldSuite",
   keywords: [
     "field service software",
     "trade business app",
     "arborist software",
     "pool maintenance app",
-    "fire safety inspection",
+    "fire-door inspection",
     "pest control software",
-    "tradie crm",
-    "Australia",
+    "deep clean software",
+    "locksmith CRM",
+    "FieldSuite",
+    "FieldMate",
   ],
   openGraph: {
-    title: "Field Mate · Software for the people who do the work",
+    title: "FieldSuite · Simple CRM + job management for the trades",
     description:
-      "Six field-first apps for the trades that don't get well-served by generic CRMs. Built mobile, priced for owner-operators.",
+      "Six dedicated apps. One trade each. Built mobile, priced for owner-operators.",
     type: "website",
-    siteName: "Field Mate",
-    locale: "en_AU",
+    siteName: "FieldSuite",
+    locale: "en_GB",
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
@@ -50,15 +60,40 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#07100a" },
-    { media: "(prefers-color-scheme: light)", color: "#f7f6f2" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f6ef" },
   ],
   width: "device-width",
   initialScale: 1,
 };
 
+/**
+ * FOUC-safe theme init. Runs synchronously before paint, reads
+ * localStorage.fm-theme (or falls back to "light"), and applies the
+ * matching class to <html>. Wrapped in IIFE so the local var doesn't
+ * leak; try/catch swallows storage exceptions in private mode.
+ */
+const themeBootstrap = `
+(function(){try{
+  var s=localStorage.getItem('fm-theme');
+  var m=(s==='dark'||s==='light')?s:'light';
+  document.documentElement.classList.add(m);
+  document.documentElement.style.colorScheme=m;
+}catch(e){document.documentElement.classList.add('light');}})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-AU" className={`${inter.variable} ${jetbrains.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrains.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: themeBootstrap }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

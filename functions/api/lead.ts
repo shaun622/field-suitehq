@@ -7,8 +7,8 @@
  *
  * Required env (set in Cloudflare Pages → Settings → Environment variables):
  *   RESEND_API_KEY        re_xxx
- *   LEAD_TO_EMAIL         hello@fieldmate.app
- *   LEAD_FROM_EMAIL       Field Mate <noreply@fieldmate.app>
+ *   LEAD_TO_EMAIL         hello@fieldsuite.app
+ *   LEAD_FROM_EMAIL       FieldSuite <noreply@fieldsuite.app>
  * Optional:
  *   TURNSTILE_SECRET      Cloudflare Turnstile secret (if you bolt a widget on)
  */
@@ -35,12 +35,19 @@ interface LeadPayload {
 }
 
 const PRODUCTS: Record<string, string> = {
-  treepro: "TreePro · Tree services",
-  poolpro: "PoolPro · Pool care",
-  firepro: "FirePro · Fire safety",
-  pestpro: "PestPro · Pest control",
-  hygienepro: "HygienePro · Hygiene services",
-  lockpro: "LockPro · Locksmiths",
+  treemate:      "TreeMate · Tree services",
+  poolmate:      "PoolMate · Pool service",
+  firemate:      "FireMate · Fire safety",
+  pestmate:      "PestMate · Pest control",
+  hygienemate:   "HygieneMate · Hygiene services",
+  locksmithmate: "LocksmithMate · Locksmiths",
+  // Legacy *Pro slugs from v1 — gracefully accept if a stale link comes in
+  treepro:    "TreeMate · Tree services",
+  poolpro:    "PoolMate · Pool service",
+  firepro:    "FireMate · Fire safety",
+  pestpro:    "PestMate · Pest control",
+  hygienepro: "HygieneMate · Hygiene services",
+  lockpro:    "LocksmithMate · Locksmiths",
 };
 
 function escapeHtml(s: string): string {
@@ -111,12 +118,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!env.RESEND_API_KEY || !env.LEAD_TO_EMAIL || !env.LEAD_FROM_EMAIL) {
     // Local dev / not configured yet — log to response so the form still gives feedback
     console.warn("[lead] missing env — Resend not configured");
-    return jsonResponse(500, { error: "Email is not configured yet. Email hello@fieldmate.app direct." });
+    return jsonResponse(500, { error: "Email is not configured yet. Email hello@fieldsuite.app direct." });
   }
 
   const productLabel = interest && PRODUCTS[interest] ? PRODUCTS[interest] : "(not specified)";
   const subjectInternal = `New lead · ${productLabel} · ${name}`;
-  const subjectReply = `G'day from Field Mate — got your enquiry`;
+  const subjectReply = `Got your FieldSuite enquiry — talk soon`;
 
   const internalHtml = `
     <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0c1812">
@@ -138,7 +145,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
           <div style="white-space:pre-wrap;color:#0c1812;font-size:14px;line-height:1.55">${escapeHtml(message)}</div>
         </div>` : ""}
       <div style="margin-top:24px;padding-top:16px;border-top:1px dashed #d4d4d4;font-size:11px;color:#9ca3af;font-family:'JetBrains Mono',monospace">
-        Field Mate · auto-generated · reply directly to this email to land in ${escapeHtml(email)}
+        FieldSuite · auto-generated · reply directly to this email to land in ${escapeHtml(email)}
       </div>
     </div>`;
 
@@ -153,11 +160,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         If you need a same-day reply, just hit reply on this email — it lands straight in our inbox.
       </p>
       <div style="margin-top:24px;padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;font-size:13px;color:#166534;line-height:1.55">
-        Cheers,<br/>The Field Mate team<br/>
-        <a href="mailto:hello@fieldmate.app" style="color:#15803d">hello@fieldmate.app</a>
+        Cheers,<br/>The FieldSuite team<br/>
+        <a href="mailto:hello@fieldsuite.app" style="color:#15803d">hello@fieldsuite.app</a>
       </div>
       <div style="margin-top:24px;font-size:11px;color:#9ca3af;font-family:'JetBrains Mono',monospace;letter-spacing:.04em">
-        Field Mate · software for the people who do the work
+        FieldSuite · simple CRM + job management for the trades
       </div>
     </div>`;
 
@@ -192,7 +199,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     if (!internalRes.ok) {
       const detail = await internalRes.text();
       console.error("[lead] internal send failed:", internalRes.status, detail);
-      return jsonResponse(502, { error: "Couldn't deliver lead. Email hello@fieldmate.app direct." });
+      return jsonResponse(502, { error: "Couldn't deliver lead. Email hello@fieldsuite.app direct." });
     }
     if (!replyRes.ok) {
       // Internal already landed; auto-reply failure is non-fatal — log only

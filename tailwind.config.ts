@@ -44,8 +44,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "Inter Variable", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "JetBrains Mono Variable", "IBM Plex Mono", "ui-monospace", "monospace"],
+        sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "IBM Plex Mono", "ui-monospace", "monospace"],
+        display: ["var(--font-display)", "Fraunces", "Georgia", "serif"],
       },
       backgroundImage: {
         "grad-brand": "linear-gradient(135deg, rgb(var(--brand-400)) 0%, rgb(var(--brand-700)) 100%)",

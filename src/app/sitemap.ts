@@ -7,7 +7,7 @@ export const dynamic = "force-static";
 export const revalidate = false;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://fieldmate.app";
+  const base = "https://fieldsuite.app";
   const now = new Date();
 
   return [

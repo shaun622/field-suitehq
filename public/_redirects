@@ -1,13 +1,28 @@
 # Cloudflare Pages redirects
-# Friendly product slugs and historical paths
 
-/treepro       /products/treepro/    301
-/poolpro       /products/poolpro/    301
-/firepro       /products/firepro/    301
-/pestpro       /products/pestpro/    301
-/hygienepro    /products/hygienepro/ 301
-/lockpro       /products/lockpro/    301
+# Friendly product slugs (top-level → /products/<slug>/)
+/treemate         /products/treemate/         301
+/poolmate         /products/poolmate/         301
+/firemate         /products/firemate/         301
+/pestmate         /products/pestmate/         301
+/hygienemate      /products/hygienemate/      301
+/locksmithmate    /products/locksmithmate/    301
 
-/contact       /#contact             301
-/pricing       /#pricing             301
-/story         /#story               301
+# Legacy *Pro paths from v1 → *Mate (rebrand)
+/products/treepro/*       /products/treemate/:splat       301
+/products/poolpro/*       /products/poolmate/:splat       301
+/products/firepro/*       /products/firemate/:splat       301
+/products/pestpro/*       /products/pestmate/:splat       301
+/products/hygienepro/*    /products/hygienemate/:splat    301
+/products/lockpro/*       /products/locksmithmate/:splat  301
+/treepro                  /products/treemate/             301
+/poolpro                  /products/poolmate/             301
+/firepro                  /products/firemate/             301
+/pestpro                  /products/pestmate/             301
+/hygienepro               /products/hygienemate/          301
+/lockpro                  /products/locksmithmate/        301
+
+# Section anchors
+/contact      /#contact     301
+/pricing      /#pricing     301
+/story        /#story       301

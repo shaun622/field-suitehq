@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Wordmark } from "./Wordmark";
 import { ProductGlyph } from "./ProductCard";
+import { ThemeToggle } from "./ThemeToggle";
 import { PRODUCTS, Product } from "@/lib/products";
 import { cn } from "@/lib/cn";
 
@@ -29,20 +30,21 @@ export function Nav({ product }: Props) {
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-out",
         scrolled
-          ? "bg-ink-950/80 backdrop-blur-xl border-b border-white/[.06]"
-          : "bg-transparent border-b border-transparent"
+          ? "bg-[rgb(var(--surface)/.85)] backdrop-blur-xl border-b border-[rgb(var(--line))]"
+          : "bg-transparent border-b border-transparent",
+        "dark:[--nav-bg:7_16_10]"
       )}
     >
       <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <Wordmark size={20} />
+          <Link href="/" className="flex items-center" aria-label="FieldSuite home">
+            <Wordmark markSize={26} />
           </Link>
           {product && (
             <>
-              <span className="text-white/30 text-sm">/</span>
+              <span className="text-[rgb(var(--ink-4))] text-sm mx-1">/</span>
               <Link href={`/products/${product.slug}`} className="flex items-center">
-                <Wordmark size={18} product={product} />
+                <Wordmark markSize={24} product={product} />
               </Link>
             </>
           )}
@@ -54,8 +56,8 @@ export function Nav({ product }: Props) {
             onMouseLeave={() => setProductsOpen(false)}
             className="relative"
           >
-            <button className="px-4 py-2 rounded-full text-white/80 hover:text-white hover:bg-white/5 transition flex items-center gap-1">
-              Products
+            <button className="px-4 py-2 rounded-full text-[rgb(var(--ink-2))] hover:text-[rgb(var(--ink))] hover:bg-[rgb(var(--surface-2))] dark:hover:bg-white/5 transition flex items-center gap-1">
+              Apps
               <svg width="10" height="10" viewBox="0 0 10 10" className={cn("transition-transform", productsOpen && "rotate-180")}>
                 <path d="M2 4l3 3 3-3" stroke="currentColor" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -66,12 +68,12 @@ export function Nav({ product }: Props) {
                 productsOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"
               )}
             >
-              <div className="bg-ink-900/95 backdrop-blur-xl border border-white/[.08] rounded-2xl p-3 shadow-deep grid grid-cols-2 gap-1">
+              <div className="bg-[rgb(var(--surface-card))] dark:bg-[rgb(var(--surface-2))] backdrop-blur-xl border border-[rgb(var(--line))] dark:border-white/[.08] rounded-2xl p-3 shadow-2xl grid grid-cols-2 gap-1">
                 {PRODUCTS.map((p) => (
                   <Link
                     key={p.slug}
                     href={`/products/${p.slug}`}
-                    className={cn("theme-" + p.slug, "group flex items-start gap-3 p-3 rounded-xl hover:bg-white/[.04] transition")}
+                    className="group flex items-start gap-3 p-3 rounded-xl hover:bg-[rgb(var(--surface-2))] dark:hover:bg-white/[.04] transition"
                   >
                     <span
                       className="grid place-items-center rounded-xl flex-shrink-0"
@@ -82,57 +84,61 @@ export function Nav({ product }: Props) {
                       }}
                       aria-hidden
                     >
-                      <ProductGlyph glyph={p.glyph} />
+                      <ProductGlyph glyph={p.glyph} size={22}/>
                     </span>
                     <div className="min-w-0">
-                      <div className="text-white font-semibold text-sm flex items-center gap-2">
+                      <div className="text-[rgb(var(--ink))] font-semibold text-sm flex items-center gap-2">
                         {p.name}
                         {p.status === "beta" && (
-                          <span className="font-mono text-[9px] tracking-[.18em] uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300">Beta</span>
+                          <span className="font-mono text-[9px] tracking-[.18em] uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300">Beta</span>
                         )}
                       </div>
-                      <div className="text-white/55 text-xs mt-0.5 leading-relaxed">{p.industry}</div>
+                      <div className="text-[rgb(var(--ink-3))] text-xs mt-0.5 leading-relaxed">{p.industry}</div>
                     </div>
                   </Link>
                 ))}
               </div>
             </div>
           </div>
-          <Link href="/#how" className="px-4 py-2 rounded-full text-white/80 hover:text-white hover:bg-white/5 transition">How it works</Link>
-          <Link href="/#pricing" className="px-4 py-2 rounded-full text-white/80 hover:text-white hover:bg-white/5 transition">Pricing</Link>
-          <Link href="/#story" className="px-4 py-2 rounded-full text-white/80 hover:text-white hover:bg-white/5 transition">Story</Link>
+          <Link href="/#how" className="px-4 py-2 rounded-full text-[rgb(var(--ink-2))] hover:text-[rgb(var(--ink))] hover:bg-[rgb(var(--surface-2))] dark:hover:bg-white/5 transition">How it works</Link>
+          <Link href="/#pricing" className="px-4 py-2 rounded-full text-[rgb(var(--ink-2))] hover:text-[rgb(var(--ink))] hover:bg-[rgb(var(--surface-2))] dark:hover:bg-white/5 transition">Pricing</Link>
+          <Link href="/#story" className="px-4 py-2 rounded-full text-[rgb(var(--ink-2))] hover:text-[rgb(var(--ink))] hover:bg-[rgb(var(--surface-2))] dark:hover:bg-white/5 transition">Story</Link>
         </nav>
 
         <div className="hidden lg:flex items-center gap-2">
-          <Link href="/#contact" className="text-sm text-white/70 hover:text-white px-3 py-2">Sign in</Link>
-          <Link href="/#contact" className="btn btn-primary text-sm">Get started →</Link>
+          <ThemeToggle />
+          <Link href="/#contact" className="text-sm text-[rgb(var(--ink-2))] hover:text-[rgb(var(--ink))] px-3 py-2">Sign in</Link>
+          <Link href="/#contact" className="btn btn-primary text-sm">Start free trial →</Link>
         </div>
 
-        <button
-          className="lg:hidden p-2 rounded-lg text-white/80 hover:bg-white/5"
-          aria-label="Menu"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            {open ? (
-              <path d="M5 5l12 12M17 5L5 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            ) : (
-              <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            )}
-          </svg>
-        </button>
+        <div className="lg:hidden flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            className="p-2 rounded-lg text-[rgb(var(--ink-2))] hover:bg-[rgb(var(--surface-2))]"
+            aria-label="Menu"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              {open ? (
+                <path d="M5 5l12 12M17 5L5 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              ) : (
+                <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-white/[.06] bg-ink-950/95 backdrop-blur-xl">
+        <div className="lg:hidden border-t border-[rgb(var(--line))] dark:border-white/[.06] bg-[rgb(var(--surface))]/95 backdrop-blur-xl">
           <div className="px-5 py-4 flex flex-col gap-1">
-            <div className="text-xs uppercase tracking-[.2em] text-white/40 px-3 pt-1 pb-2 font-mono">Products</div>
+            <div className="text-xs uppercase tracking-[.2em] text-[rgb(var(--ink-3))] px-3 pt-1 pb-2 font-mono">Apps</div>
             {PRODUCTS.map((p) => (
               <Link
                 key={p.slug}
                 href={`/products/${p.slug}`}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[rgb(var(--surface-2))] dark:hover:bg-white/5"
               >
                 <span
                   className="grid place-items-center rounded-lg flex-shrink-0"
@@ -142,17 +148,17 @@ export function Nav({ product }: Props) {
                   }}
                   aria-hidden
                 >
-                  <ProductGlyph glyph={p.glyph} />
+                  <ProductGlyph glyph={p.glyph} size={18}/>
                 </span>
-                <span className="text-white text-sm font-semibold">{p.name}</span>
-                <span className="text-white/50 text-xs ml-auto">{p.industryShort}</span>
+                <span className="text-[rgb(var(--ink))] text-sm font-semibold">{p.name}</span>
+                <span className="text-[rgb(var(--ink-3))] text-xs ml-auto">{p.industryShort}</span>
               </Link>
             ))}
             <div className="divider-dots my-3 mx-3" />
-            <Link href="/#how" onClick={() => setOpen(false)} className="px-3 py-3 text-white/85 rounded-xl hover:bg-white/5">How it works</Link>
-            <Link href="/#pricing" onClick={() => setOpen(false)} className="px-3 py-3 text-white/85 rounded-xl hover:bg-white/5">Pricing</Link>
-            <Link href="/#story" onClick={() => setOpen(false)} className="px-3 py-3 text-white/85 rounded-xl hover:bg-white/5">Story</Link>
-            <Link href="/#contact" onClick={() => setOpen(false)} className="btn btn-primary mt-3 self-start">Get started →</Link>
+            <Link href="/#how" onClick={() => setOpen(false)} className="px-3 py-3 text-[rgb(var(--ink-2))] rounded-xl hover:bg-[rgb(var(--surface-2))]">How it works</Link>
+            <Link href="/#pricing" onClick={() => setOpen(false)} className="px-3 py-3 text-[rgb(var(--ink-2))] rounded-xl hover:bg-[rgb(var(--surface-2))]">Pricing</Link>
+            <Link href="/#story" onClick={() => setOpen(false)} className="px-3 py-3 text-[rgb(var(--ink-2))] rounded-xl hover:bg-[rgb(var(--surface-2))]">Story</Link>
+            <Link href="/#contact" onClick={() => setOpen(false)} className="btn btn-primary mt-3 self-start">Start free trial →</Link>
           </div>
         </div>
       )}

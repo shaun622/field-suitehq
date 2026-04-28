@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PRODUCTS, productBySlug } from "@/lib/products";
-import { TreeProPage } from "@/components/product/TreeProPage";
+import { TreeMatePage } from "@/components/product/TreeMatePage";
 import { GenericProductPage } from "@/components/product/GenericProductPage";
 
 interface Params { slug: string; }
@@ -30,6 +30,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   const product = productBySlug(slug);
   if (!product) return notFound();
 
-  if (product.slug === "treepro") return <TreeProPage product={product} />;
+  if (product.slug === "treemate") return <TreeMatePage product={product} />;
   return <GenericProductPage product={product} />;
 }

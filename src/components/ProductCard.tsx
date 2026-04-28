@@ -38,8 +38,8 @@ export function ProductCard({ product, featured }: Props) {
             <ProductGlyph glyph={product.glyph} size={32} />
           </span>
           <div>
-            <div className="font-extrabold text-white text-xl tracking-tight">{product.name}</div>
-            <div className="font-mono text-[10px] tracking-[.2em] uppercase text-white/45 mt-0.5">
+            <div className="font-extrabold text-[rgb(var(--ink))] text-xl tracking-tight">{product.name}</div>
+            <div className="font-mono text-[10px] tracking-[.2em] uppercase text-[rgb(var(--ink-3))] mt-0.5">
               {product.industryShort}
             </div>
           </div>
@@ -47,13 +47,13 @@ export function ProductCard({ product, featured }: Props) {
         <StatusBadge status={product.status} />
       </div>
 
-      <p className={cn("relative mt-5 text-white/70 leading-relaxed", featured ? "text-base" : "text-sm")}>
+      <p className={cn("relative mt-5 text-[rgb(var(--ink-2))] leading-relaxed", featured ? "text-base" : "text-sm")}>
         {product.pitch}
       </p>
 
       <ul className="relative mt-5 space-y-2">
         {product.bullets.map((b) => (
-          <li key={b} className="flex items-start gap-2.5 text-sm text-white/70">
+          <li key={b} className="flex items-start gap-2.5 text-sm text-[rgb(var(--ink-2))]">
             <svg width="14" height="14" viewBox="0 0 14 14" className="mt-0.5 flex-shrink-0" style={{ color: product.brandHex }}>
               <path d="M2 7.5l3 3 7-7" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -67,7 +67,7 @@ export function ProductCard({ product, featured }: Props) {
           {product.certs.map((c) => (
             <span
               key={c}
-              className="font-mono text-[10px] tracking-[.12em] uppercase px-2 py-1 rounded bg-white/[.04] border border-white/[.06] text-white/60"
+              className="font-mono text-[10px] tracking-[.12em] uppercase px-2 py-1 rounded bg-[rgb(var(--surface-2))] dark:bg-white/[.04] border border-[rgb(var(--line))] dark:border-white/[.06] text-[rgb(var(--ink-3))]"
             >
               {c}
             </span>
@@ -88,20 +88,20 @@ export function ProductCard({ product, featured }: Props) {
 function StatusBadge({ status }: { status: Product["status"] }) {
   if (status === "live") {
     return (
-      <span className="font-mono text-[10px] tracking-[.18em] uppercase px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live
+      <span className="font-mono text-[10px] tracking-[.18em] uppercase px-2 py-1 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
       </span>
     );
   }
   if (status === "beta") {
     return (
-      <span className="font-mono text-[10px] tracking-[.18em] uppercase px-2 py-1 rounded bg-amber-500/15 text-amber-300 border border-amber-500/25">
+      <span className="font-mono text-[10px] tracking-[.18em] uppercase px-2 py-1 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/25">
         Private beta
       </span>
     );
   }
   return (
-    <span className="font-mono text-[10px] tracking-[.18em] uppercase px-2 py-1 rounded bg-white/[.05] text-white/50 border border-white/[.08]">
+    <span className="font-mono text-[10px] tracking-[.18em] uppercase px-2 py-1 rounded bg-[rgb(var(--surface-2))] dark:bg-white/[.05] text-[rgb(var(--ink-3))] border border-[rgb(var(--line))] dark:border-white/[.08]">
       Coming soon
     </span>
   );

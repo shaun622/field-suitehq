@@ -1,5 +1,7 @@
-// Concept-grouped copy for TreePro — derived from the agency creative deck.
-// Each "concept" maps to a section angle on the product page.
+// Concept-grouped copy for TreeMate — derived from the original agency
+// creative deck. Each "concept" maps to a section angle on the product page.
+// TreeMate stays AU-flavoured (ute, AUD, G'day, AS 4373); the other five apps
+// run UK voice from products.ts.
 
 export interface CopyVariant { headline: string; primary: string; }
 export interface ConceptBlock {
@@ -10,7 +12,7 @@ export interface ConceptBlock {
   variants: CopyVariant[];
 }
 
-export const TREEPRO_COPY: Record<string, ConceptBlock> = {
+export const TREEMATE_COPY: Record<string, ConceptBlock> = {
   speed: {
     id: "speed",
     title: "Quote it before you've finished your coffee",
@@ -28,7 +30,7 @@ export const TREEPRO_COPY: Record<string, ConceptBlock> = {
     angle: "PAIN POINT",
     cta: "End the 9pm admin shift",
     variants: [
-      { headline: "Stop doing quotes at 9pm.", primary: "You did the work. You shouldn't have to spend the night doing the paperwork too. TreePro sends quotes from the site." },
+      { headline: "Stop doing quotes at 9pm.", primary: "You did the work. You shouldn't have to spend the night doing the paperwork too. TreeMate sends quotes from the site." },
       { headline: "Reclaim your evenings.", primary: "Kettle's on. Footy's on. And your last quote went out three hours ago — from the cab of the ute. Built for the field, not the kitchen table." },
       { headline: "Your laptop is not a job site.", primary: "Tradies who quote from site get paid 11 days faster on average. Move the admin where the work happens." },
     ],
@@ -51,7 +53,7 @@ export const TREEPRO_COPY: Record<string, ConceptBlock> = {
     cta: "Try it free",
     variants: [
       { headline: "Built by an arborist.", primary: "Built by someone who's been 15m up a Eucalypt with a rumbling chainsaw and a customer texting 'how much longer?' — not by someone who Googled 'tree CRM'." },
-      { headline: "From the bucket, for the bucket.", primary: "TreePro was sketched on a phone halfway up a Spotted Gum. It still runs the same way — gloved-thumb friendly, every screen." },
+      { headline: "From the bucket, for the bucket.", primary: "TreeMate was sketched on a phone halfway up a Spotted Gum. It still runs the same way — gloved-thumb friendly, every screen." },
       { headline: "An arborist's app.", primary: "Designed at a worksite, not a whiteboard. If a feature didn't survive a wet day in the bucket, it didn't ship." },
     ],
   },
@@ -72,7 +74,7 @@ export const TREEPRO_COPY: Record<string, ConceptBlock> = {
     angle: "INDUSTRY-SPECIFIC",
     cta: "Made for tree people",
     variants: [
-      { headline: "Generic CRMs don't get EWPs.", primary: "Generic apps don't know what an EWP is, why heritage trees matter, or that crane work is $250/hr. TreePro does." },
+      { headline: "Generic CRMs don't get EWPs.", primary: "Generic apps don't know what an EWP is, why heritage trees matter, or that crane work is $250/hr. TreeMate does." },
       { headline: "AS4373 baked in.", primary: "Pre-loaded prune codes, hazard tags (powerlines, structures, heritage), and an equipment library priced in AUD. Built for our work." },
       { headline: "Built for tree work, full stop.", primary: "Stump grinders. Chippers. Cranes. EWPs. Cat 2 crews. Heritage tagging. The terms aren't in the help docs — they're in the buttons." },
     ],

@@ -18,7 +18,7 @@ interface DashboardCopy {
   tabs: { label: string; active?: boolean }[];
 }
 
-const TREEPRO_DASH: DashboardCopy = {
+const TREEMATE_DASH: DashboardCopy = {
   greet: "G'day, Shaun",
   date: "Tuesday, 14 May",
   initials: "SR",
@@ -38,7 +38,7 @@ const TREEPRO_DASH: DashboardCopy = {
   ],
 };
 
-export function PhoneDashboard({ light = false, copy = TREEPRO_DASH }: Light & { copy?: DashboardCopy }) {
+export function PhoneDashboard({ light = false, copy = TREEMATE_DASH }: Light & { copy?: DashboardCopy }) {
   return (
     <div className={cn("phone-inner", light && "light")}>
       <StatusBar light={light} />
@@ -235,7 +235,7 @@ interface PortalCopy {
   brandName: string;
 }
 
-const TREEPRO_PORTAL: PortalCopy = {
+const TREEMATE_PORTAL: PortalCopy = {
   ref: "#Q-2419",
   greeting: "Hi Glen — your tree quote is ready.",
   lines: [
@@ -244,22 +244,22 @@ const TREEPRO_PORTAL: PortalCopy = {
     { title: "Stump grind", amt: "$250" },
   ],
   total: "$3,200",
-  brandName: "TreePro",
+  brandName: "TreeMate",
 };
 
-export function PhonePortal({ copy = TREEPRO_PORTAL }: { copy?: PortalCopy }) {
+export function PhonePortal({ copy = TREEMATE_PORTAL }: { copy?: PortalCopy }) {
   return (
     <div className="phone-inner light">
       <StatusBar light />
-      <div className="flex flex-col h-full bg-white text-ink-900">
+      <div className="flex flex-col h-full bg-white" style={{ color: "#0c1812" }}>
         <div className="px-5 pt-4 pb-3.5"
              style={{ background: "linear-gradient(160deg, rgb(var(--brand-900)) 0%, #07100a 100%)", color: "#fff" }}>
           <div className="text-[11px] tracking-[.14em] uppercase text-white/55">QUOTE FROM</div>
           <div className="flex items-center gap-2 mt-1.5">
-            <div className="fm-wordmark" style={{ fontSize: 18 }}>
-              <span className="fm-mark" aria-hidden />
-              <span className="fm-wordmark-text">{copy.brandName}</span>
-            </div>
+            <span className="inline-flex items-center gap-2" style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>
+              <span className="fm-mark" style={{ width: 22, height: 22 }} aria-hidden />
+              {copy.brandName}
+            </span>
             <span className="font-mono text-[10px] tracking-[.14em] text-white/55 ml-auto">{copy.ref}</span>
           </div>
           <div className="mt-2 text-[18px] font-bold tracking-tight">{copy.greeting}</div>
@@ -488,7 +488,7 @@ export function PhonePipeline({ light = false }: Light) {
 
 /* -------- Per-product copy presets -------- */
 
-export const POOL_DASH: DashboardCopy = {
+export const POOLMATE_DASH: DashboardCopy = {
   greet: "G'day, Mick",
   date: "Wednesday, 15 May",
   initials: "MV",
@@ -506,7 +506,7 @@ export const POOL_DASH: DashboardCopy = {
   tabs: [{ label: "Home", active: true }, { label: "Route" }, { label: "Pools" }, { label: "Money" }, { label: "More" }],
 };
 
-export const FIRE_DASH: DashboardCopy = {
+export const FIREMATE_DASH: DashboardCopy = {
   greet: "Morning, Tom",
   date: "Thursday, 16 May",
   initials: "TW",

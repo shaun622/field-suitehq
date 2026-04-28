@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
 import { PRODUCTS } from "@/lib/products";
 
+// Required for `output: "export"` so Next renders the sitemap at build time
+// instead of trying to serve it dynamically.
+export const dynamic = "force-static";
+export const revalidate = false;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://fieldmate.app";
   const now = new Date();

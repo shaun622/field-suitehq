@@ -102,7 +102,7 @@ export function DesktopDashboard({ product, stats, className }: Props) {
   const ACCENT = product.brandHex;
   const ACCENT_DEEP = product.brandHexDeep;
   const initial = product.name[0];
-  const currency = product.tone === "AU" ? "$" : "£";
+  const currency = "$"; // FieldSuite is multi-region; locale-aware formatting in the real product.
 
   // Sample activity items — customise minimally per product
   const activity: { title: string; sub: string; tag: string }[] =
@@ -121,7 +121,7 @@ export function DesktopDashboard({ product, stats, className }: Props) {
       : product.slug === "locksmithmate"
       ? [
           { title: "Job completed",  sub: "BS 3621 swap · 12 Park Rd",           tag: "Job" },
-          { title: "Invoice paid",   sub: "Card-on-file · £180",                 tag: "Paid" },
+          { title: "Invoice paid",   sub: "Card-on-file · $180",                 tag: "Paid" },
           { title: "ETA sent",       sub: "Tech 4 min away · 9 Rose Ave",        tag: "ETA" },
         ]
       : [

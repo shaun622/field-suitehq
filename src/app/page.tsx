@@ -206,7 +206,7 @@ export default function Home() {
                 { n: "05", title: "Offline-first",
                   body: "Patchy 3G in a basement? Lift in a tower? Underground car park? The app keeps working. Syncs when you're back." },
                 { n: "06", title: "Customer portal, included",
-                  body: "Clients log in, see history, download reports. Not a £20/mo bolt-on." },
+                  body: "Clients log in, see history, download reports. Not a $20/mo bolt-on." },
               ].map((b) => (
                 <div key={b.title} className="card p-6 card-glow">
                   <div className="font-mono text-[11px] tracking-[.18em] text-[rgb(var(--brand-600))] dark:text-[rgb(var(--brand-400))]">— {b.n}</div>
@@ -231,17 +231,17 @@ export default function Home() {
               </em>
             </h2>
             <p className="mt-5 text-lg text-[rgb(var(--ink-2))] leading-relaxed">
-              Same simple plans across every FieldSuite app. From £29/mo (or AUD $49/mo for TreeMate). FireMate is £49/mo because the BS 8214 register storage costs us more.
+              Same simple plans across every FieldSuite app. From $29/mo. FireMate runs $49/mo because the BS 8214 register storage costs us more.
             </p>
           </div>
 
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { name: "Solo",     price: "£29",  per: "/mo + VAT", blurb: "For one tech with a phone.",
+              { name: "Solo",     price: "$29",  per: "/mo + GST", blurb: "For one tech with a phone.",
                 features: ["1 user", "Unlimited jobs & quotes", "Customer portal", "Branded reports", "Email + SMS"], popular: false },
-              { name: "Crew",     price: "£79",  per: "/mo + VAT", blurb: "For a small team. Up to 5 users.",
+              { name: "Crew",     price: "$79",  per: "/mo + GST", blurb: "For a small team. Up to 5 users.",
                 features: ["Up to 5 users", "Recurring contracts", "Route planning", "Automations", "Stripe + Xero"], popular: true },
-              { name: "Business", price: "£199", per: "/mo + VAT", blurb: "For a multi-van operation.",
+              { name: "Business", price: "$199", per: "/mo + GST", blurb: "For a multi-van operation.",
                 features: ["Up to 25 users", "API + webhooks", "Custom branding", "Priority support", "Onboarding included"], popular: false },
             ].map((p) => (
               <div

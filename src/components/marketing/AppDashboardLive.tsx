@@ -17,7 +17,16 @@
  */
 import { useState, type ReactNode } from "react";
 import { Product } from "@/lib/products";
-import { TREE_DATA, dataFor, type ClientRow, type DashboardData, type QuoteDetail } from "@/lib/dashboard-data";
+import {
+  TREE_DATA, dataFor,
+  type ClientRow, type DashboardData,
+  type QuoteDetail, type QuoteDetailLabels,
+} from "@/lib/dashboard-data";
+
+/** Sum a list of $-prefixed money strings ("$1,840") to a number. */
+function sumMoney(rows: { value: string }[]): number {
+  return rows.reduce((sum, r) => sum + parseFloat(r.value.replace(/[$,]/g, "")), 0);
+}
 
 interface Props {
   product: Product;
@@ -93,11 +102,11 @@ export function AppDashboardLive({ product, defaultTab = "home", className }: Pr
         })}
       </div>
 
-      {tab === "home"      && <HomeView      product={product} accent={accent} accentDeep={accentDeep} />}
+      {tab === "home"      && <HomeView      product={product} accent={accent} accentDeep={accentDeep} data={data} />}
       {tab === "sched"     && <ScheduleView  data={data.schedule} accent={accent} />}
       {tab === "clients"   && <ClientsView   data={data.clients} accent={accent} />}
       {tab === "jobs"      && <JobsView      data={data.jobs} accent={accent} />}
-      {tab === "quotes"    && <QuotesView    rows={data.quotes} detail={data.quoteDetail} accent={accent} />}
+      {tab === "quotes"    && <QuotesView    rows={data.quotes} detail={data.quoteDetail} labels={data.quoteDetailLabels} accent={accent} />}
       {tab === "invoices"  && <InvoicesView  data={data.invoices} accent={accent} />}
       {tab === "analytics" && <AnalyticsView data={data.analytics} accent={accent} />}
       {tab === "settings"  && <SettingsView  product={product} accent={accent} />}
@@ -224,8 +233,11 @@ function Pill({ children, tone = "default", accent }: { children: ReactNode; ton
 
 /* ---------- HOME ---------- */
 
-function HomeView({ product, accent, accentDeep }: { product: Product; accent: string; accentDeep: string }) {
+function HomeView({ product, accent, accentDeep, data }: { product: Product; accent: string; accentDeep: string; data: DashboardData }) {
   const tintBg = `linear-gradient(135deg, ${accent}1a, ${accent}0a)`;
+  const revenueMTD = data.analytics.revenueMonths[data.analytics.revenueMonths.length - 1];
+  const revenueMTDFmt = `$${revenueMTD.toLocaleString()}`;
+  const clientCount = data.clients.length;
 
   return (
     <>
@@ -273,7 +285,7 @@ function HomeView({ product, accent, accentDeep }: { product: Product; accent: s
           <div className="font-mono" style={{ fontSize: 9, letterSpacing: ".1em", color: accentDeep, textTransform: "uppercase", fontWeight: 600 }}>
             Revenue (month to date)
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 6, letterSpacing: "-0.015em" }}>£12,840</div>
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 6, letterSpacing: "-0.015em" }}>{revenueMTDFmt}</div>
           <div style={{ fontSize: 10, color: "rgb(var(--ink-3))", marginTop: 4 }}>From completed jobs this month</div>
         </div>
         <div className="app-card">
@@ -283,7 +295,7 @@ function HomeView({ product, accent, accentDeep }: { product: Product; accent: s
             </div>
             <Glyph kind="users" size={11} />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 6 }}>34</div>
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 6 }}>{clientCount}</div>
           <div style={{ fontSize: 10, color: "rgb(var(--ink-3))", marginTop: 4 }}>Across divisions</div>
           <div style={{ fontSize: 10, color: accent, marginTop: 8, fontWeight: 500 }}>Open CRM →</div>
         </div>
@@ -576,16 +588,25 @@ function JobsView({ data, accent }: { data: DashboardData["jobs"]; accent: strin
 
 /* ---------- QUOTES ---------- */
 
-function QuotesView({ rows, detail, accent }: { rows: DashboardData["quotes"]; detail: QuoteDetail; accent: string }) {
+function QuotesView({ rows, detail, labels, accent }: {
+  rows: DashboardData["quotes"];
+  detail: QuoteDetail;
+  labels: QuoteDetailLabels;
+  accent: string;
+}) {
   const [selRef, setSelRef] = useState(detail.ref);
-  // detail panel always shows the canonical detail for now (only one fully fleshed in fixture)
+  // Detail panel always shows the canonical detail for now (only one is fully
+  // fleshed per fixture). selRef just toggles the row highlight.
   const stateTone = (s: "sent" | "won" | "lost"): PillTone =>
     s === "won" ? "good" : s === "lost" ? "bad" : "accent";
+
+  const pipelineTotal = sumMoney(rows.filter((r) => r.accent !== "lost"));
+  const pipelineTotalFmt = `$${pipelineTotal.toLocaleString()}`;
 
   return (
     <TabFrame
       eyebrow="Pipeline"
-      title="6 quotes · £41,180 in pipeline"
+      title={`${rows.length} quotes · ${pipelineTotalFmt} in pipeline`}
       accent={accent}
       right={<Pill tone="accent" accent={accent}>+ New quote</Pill>}
     >
@@ -646,10 +667,10 @@ function QuotesView({ rows, detail, accent }: { rows: DashboardData["quotes"]; d
 
           <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 10 }}>
             {[
-              ["Species", detail.species],
-              ["DBH / Height", `${detail.dbh} · ${detail.height}`],
-              ["Spread", detail.spread],
-              ["AS 4373", detail.pruneCode],
+              [labels.species,   detail.species],
+              [labels.dbhHeight, `${detail.dbh} · ${detail.height}`],
+              [labels.spread,    detail.spread],
+              [labels.pruneCode, detail.pruneCode],
             ].map(([k, v]) => (
               <div key={k}>
                 <div className="font-mono" style={{ fontSize: 8.5, letterSpacing: ".1em", color: "rgb(var(--ink-3))", textTransform: "uppercase" }}>{k}</div>
@@ -659,7 +680,7 @@ function QuotesView({ rows, detail, accent }: { rows: DashboardData["quotes"]; d
           </div>
 
           <div style={{ marginTop: 12, padding: "8px 0", borderTop: "1px solid rgb(var(--line))" }}>
-            <div className="font-mono" style={{ fontSize: 8.5, letterSpacing: ".1em", color: "rgb(var(--ink-3))", textTransform: "uppercase", marginBottom: 6 }}>Hazards</div>
+            <div className="font-mono" style={{ fontSize: 8.5, letterSpacing: ".1em", color: "rgb(var(--ink-3))", textTransform: "uppercase", marginBottom: 6 }}>{labels.hazards}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
               {detail.hazards.map((h) => <Pill key={h} tone="warn" accent={accent}>{h}</Pill>)}
             </div>
@@ -693,7 +714,7 @@ function InvoicesView({ data, accent }: { data: DashboardData["invoices"]; accen
   const sumWhere = (pred: (s: string) => boolean) =>
     data
       .filter((i) => pred(i.state))
-      .reduce((sum, i) => sum + parseFloat(i.value.replace(/[£,]/g, "")), 0);
+      .reduce((sum, i) => sum + parseFloat(i.value.replace(/[$,]/g, "")), 0);
 
   const totals = {
     paid: sumWhere((s) => s.startsWith("Paid")),
@@ -704,15 +725,15 @@ function InvoicesView({ data, accent }: { data: DashboardData["invoices"]; accen
   return (
     <TabFrame
       eyebrow="Invoices"
-      title="7 invoices · April"
+      title={`${data.length} invoices · April`}
       accent={accent}
       right={<Pill tone="accent" accent={accent}>+ New invoice</Pill>}
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
         {([
-          ["Paid this month", `£${totals.paid.toLocaleString()}`, "good"],
-          ["Outstanding",      `£${totals.out.toLocaleString()}`,  "accent"],
-          ["Overdue",          `£${totals.over.toLocaleString()}`, totals.over ? "bad" : "good"],
+          ["Paid this month", `$${totals.paid.toLocaleString()}`, "good"],
+          ["Outstanding",      `$${totals.out.toLocaleString()}`,  "accent"],
+          ["Overdue",          `$${totals.over.toLocaleString()}`, totals.over ? "bad" : "good"],
         ] as [string, string, PillTone][]).map(([k, v, tone]) => (
           <Card key={k}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -763,6 +784,10 @@ function InvoicesView({ data, accent }: { data: DashboardData["invoices"]; accen
 
 function AnalyticsView({ data, accent }: { data: DashboardData["analytics"]; accent: string }) {
   const max = Math.max(...data.revenueMonths);
+  const last = data.revenueMonths[data.revenueMonths.length - 1];
+  const prev = data.revenueMonths[data.revenueMonths.length - 2] ?? last;
+  const deltaPct = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
+  const deltaSign = deltaPct >= 0 ? "+" : "";
 
   return (
     <TabFrame
@@ -789,30 +814,33 @@ function AnalyticsView({ data, accent }: { data: DashboardData["analytics"]; acc
         <Card style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <Eyebrow accent={accent}>Revenue · 6mo</Eyebrow>
-            <span className="font-mono" style={{ fontSize: 11, fontWeight: 600 }}>£12,840 <span style={{ color: "#15803d", fontSize: 9 }}>+12%</span></span>
+            <span className="font-mono" style={{ fontSize: 11, fontWeight: 600 }}>
+              ${last.toLocaleString()}{" "}
+              <span style={{ color: deltaPct >= 0 ? "#15803d" : "#b91c1c", fontSize: 9 }}>{deltaSign}{deltaPct}%</span>
+            </span>
           </div>
           <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 10, marginTop: 14, padding: "0 4px", minHeight: 120 }}>
             {data.revenueMonths.map((v, i) => {
               const h = (v / max) * 100;
-              const last = i === data.revenueMonths.length - 1;
+              const isLast = i === data.revenueMonths.length - 1;
               return (
                 <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                   <div style={{
                     width: "100%",
                     height: `${h}%`,
-                    background: last ? accent : `${accent}33`,
+                    background: isLast ? accent : `${accent}33`,
                     borderRadius: "4px 4px 0 0",
                     minHeight: 8,
                     position: "relative",
                   }}>
-                    {last && (
+                    {isLast && (
                       <div className="font-mono" style={{
                         position: "absolute",
                         top: -18,
                         left: "50%",
                         transform: "translateX(-50%)",
                         fontSize: 9, fontWeight: 600, color: accent, whiteSpace: "nowrap",
-                      }}>£{(v / 1000).toFixed(1)}k</div>
+                      }}>${(v / 1000).toFixed(1)}k</div>
                     )}
                   </div>
                   <div className="font-mono" style={{ fontSize: 9, color: "rgb(var(--ink-3))", letterSpacing: ".05em" }}>{data.revenueLabels[i]}</div>

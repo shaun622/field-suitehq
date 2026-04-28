@@ -76,7 +76,7 @@ export interface Product {
   feats: Feat[];
   /** 4-step "how it runs" checklist for the dashboard preview section */
   checklist: ChecklistStep[];
-  /** Pricing for this product (£ or $ already baked in via tone) */
+  /** Pricing for this product (currency symbol already baked in) */
   pricing: PricingTier[];
   /** Concise FAQ */
   faq: { q: string; a: string }[];
@@ -91,21 +91,22 @@ const tier = (pop: boolean | undefined, name: string, price: string, per: string
 });
 
 /* -------- per-product pricing ----------- */
-const POUND_PRICING_29 = (extra: string[] = []): PricingTier[] => [
-  tier(false, "Solo",    "£29",  "/mo + VAT", "For one tech with a phone.",
+// All pricing in $ — locale-agnostic. Real product is locale-aware at render time.
+const STD_PRICING_29 = (extra: string[] = []): PricingTier[] => [
+  tier(false, "Solo",     "$29",  "/mo + GST", "For one tech with a phone.",
     ["1 user", "Unlimited jobs", "Branded PDFs", "Customer portal", "Email support"]),
-  tier(true,  "Crew",    "£79",  "/mo + VAT", "For a small team.",
+  tier(true,  "Crew",     "$79",  "/mo + GST", "For a small team.",
     ["Up to 5 users", "Everything in Solo", "Recurring contracts", "Route planning", "Priority support", ...extra]),
-  tier(false, "Business","£199", "/mo + VAT", "For a multi-van operation.",
+  tier(false, "Business", "$199", "/mo + GST", "For a multi-van operation.",
     ["Up to 25 users", "Everything in Crew", "API access", "Custom branding", "Onboarding included"]),
 ];
 
-const POUND_PRICING_49 = (extra: string[] = []): PricingTier[] => [
-  tier(false, "Solo",     "£49",  "/mo + VAT", "For one assessor with a tablet.",
+const STD_PRICING_49 = (extra: string[] = []): PricingTier[] => [
+  tier(false, "Solo",      "$49",  "/mo + GST", "For one assessor with a tablet.",
     ["1 user", "Unlimited buildings", "BS 8214 checklist", "Dual sign-off", "Branded PDFs"]),
-  tier(true,  "Practice", "£129", "/mo + VAT", "For an FRA practice.",
+  tier(true,  "Practice",  "$129", "/mo + GST", "For an FRA practice.",
     ["Up to 5 assessors", "Everything in Solo", "Portfolio view", "Re-inspection scheduling", "Priority support", ...extra]),
-  tier(false, "Enterprise","£299","/mo + VAT", "For multi-site / managing agents.",
+  tier(false, "Enterprise", "$299","/mo + GST", "For multi-site / managing agents.",
     ["Up to 25 users", "Everything in Practice", "API access", "White-label PDF", "5-year audit retention SLA"]),
 ];
 
@@ -201,7 +202,7 @@ export const PRODUCTS: Product[] = [
     certs: ["PWTAG-aware", "HSG282 ready", "COSHH", "Offline-first PWA"],
     strip: [
       ["Built for",   "Pool service & maintenance"],
-      ["Pricing",     "From £29/mo · 14-day trial"],
+      ["Pricing",     "From $29/mo · 14-day trial"],
       ["Chemicals",   "Targets + alerts per pool"],
       ["Schedule",    "Auto-routes by postcode"],
     ],
@@ -225,7 +226,7 @@ export const PRODUCTS: Product[] = [
       { title: "Customer gets the PDF", body: "Branded. With trends. With photos. Same day." },
       { title: "Trends over the season",body: "One chart per chemical, per pool. Catch the green water before it happens." },
     ],
-    pricing: POUND_PRICING_29(["Xero / QuickBooks sync"]),
+    pricing: STD_PRICING_29(["Xero / QuickBooks sync"]),
     faq: [
       { q: "Does it handle one-off jobs and recurring service together?",
         a: "Yes. Recurring weekly/fortnightly contracts and one-off acid washes / pump rebuilds run through the same job pipeline." },
@@ -260,7 +261,7 @@ export const PRODUCTS: Product[] = [
     strip: [
       ["Built for",       "Independent FRA assessors"],
       ["Per door",        "71-item BS 8214 checklist"],
-      ["Pricing",         "From £49/mo · 14-day trial"],
+      ["Pricing",         "From $49/mo · 14-day trial"],
       ["Audit retention", "5 years, immutable"],
     ],
     feats: [
@@ -283,7 +284,7 @@ export const PRODUCTS: Product[] = [
       { title: "Both sign on the device", body: "You with your cert number. The responsible person with theirs. Both on the PDF." },
       { title: "PDF in the inbox",      body: "Branded register-of-record. Compliance %. Five-year retention. Done." },
     ],
-    pricing: POUND_PRICING_49(["Building portfolio view"]),
+    pricing: STD_PRICING_49(["Building portfolio view"]),
     faq: [
       { q: "Does it cover RRO 2005 and Building Safety Act?",
         a: "Yes. The checklist is mapped to BS 8214:2016 and the report layout is built for the evidence requirements under the Regulatory Reform (Fire Safety) Order 2005 and the Building Safety Act regime." },
@@ -336,7 +337,7 @@ export const PRODUCTS: Product[] = [
     strip: [
       ["Built for",   "BPCA-registered techs"],
       ["Audit-ready", "Branded PDF per visit"],
-      ["Pricing",     "From £29/mo · 14-day trial"],
+      ["Pricing",     "From $29/mo · 14-day trial"],
       ["Works",       "Offline-first PWA"],
     ],
     feats: [
@@ -359,7 +360,7 @@ export const PRODUCTS: Product[] = [
       { title: "Branded PDF lands",        body: "In your customer's inbox. With your cert numbers, your colours, your logo." },
       { title: "Compounding records",      body: "Every visit builds your audit trail. Inspector turns up? Forward the file." },
     ],
-    pricing: POUND_PRICING_29(),
+    pricing: STD_PRICING_29(),
     faq: [
       { q: "Does it handle CRRU and COSHH compliance?",
         a: "Yes. Products are logged with batch and quantity. The CRRU UK Code stewardship language is on the report by default." },
@@ -406,7 +407,7 @@ export const PRODUCTS: Product[] = [
     strip: [
       ["Built for",     "Kitchen extraction & sanitisation"],
       ["Photo evidence","Before / after, every visit"],
-      ["Pricing",       "From £29/mo · 14-day trial"],
+      ["Pricing",       "From $29/mo · 14-day trial"],
       ["Chemicals",     "Logged with batch + quantity"],
     ],
     feats: [
@@ -429,7 +430,7 @@ export const PRODUCTS: Product[] = [
       { title: "Customer gets the PDF",  body: "Same day. Branded. With every photo, every chemical, every signature." },
       { title: "Audit lands",            body: "Customer's FSA inspector turns up. They forward your PDF. Job done." },
     ],
-    pricing: POUND_PRICING_29(),
+    pricing: STD_PRICING_29(),
     faq: [
       { q: "Does it work for healthcare IPC contracts?",
         a: "Yes. Care home / clinical-area schedules with IPC-specific checklists are templated. Sign-off captured per area." },
@@ -471,7 +472,7 @@ export const PRODUCTS: Product[] = [
     certs: ["MLA-aware", "DBS-ready", "BS 3621", "BS 8621"],
     strip: [
       ["Built for",    "Mobile / emergency locksmiths"],
-      ["Pricing",      "From £29/mo · 14-day trial"],
+      ["Pricing",      "From $29/mo · 14-day trial"],
       ["Pre-arrival",  "Photo + DBS card auto-sent"],
       ["Get paid",     "Card or BACS, before you leave"],
     ],
@@ -495,7 +496,7 @@ export const PRODUCTS: Product[] = [
       { title: "Lock fitted, photo'd",     body: "Picture goes into the job sheet. Job sheet becomes the invoice." },
       { title: "Paid before you leave",    body: "Card-on-file or tap-to-pay. Digital invoice. Clean exit." },
     ],
-    pricing: POUND_PRICING_29(["Stripe + GoCardless built in"]),
+    pricing: STD_PRICING_29(["Stripe + GoCardless built in"]),
     faq: [
       { q: "Does it handle landlord / lettings packages?",
         a: "Yes. Between-tenancy bulk lock changes, master keying schedules, and key-handover sign-off are all templated for letting agents." },
@@ -526,7 +527,8 @@ export const liveProducts = PRODUCTS.filter((p) => p.status === "live");
 export const betaProducts = PRODUCTS.filter((p) => p.status === "beta");
 
 /** Currency symbol for the active product. Used by the lead form etc. */
-export const currencyFor = (p: Product): "$" | "£" => (p.tone === "AU" ? "$" : "£");
+/** Currency symbol — single $ across the suite for now (locale-aware on the real product). */
+export const currencyFor = (_p: Product): "$" => "$";
 
 /** Legacy slug map — used by _redirects + lead Function. */
 export const LEGACY_SLUGS: Record<string, ProductSlug> = {

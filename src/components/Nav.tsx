@@ -29,10 +29,7 @@ export function Nav({ product }: Props) {
     <header
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-out",
-        scrolled
-          ? "bg-[rgb(var(--surface)/.85)] backdrop-blur-xl border-b border-[rgb(var(--line))]"
-          : "bg-transparent border-b border-transparent",
-        "dark:[--nav-bg:7_16_10]"
+        scrolled ? "nav-glass" : "border-b border-transparent"
       )}
     >
       <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">

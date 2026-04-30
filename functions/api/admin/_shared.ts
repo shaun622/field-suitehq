@@ -143,3 +143,107 @@ export async function fetchAuthEmails(
   }
   return out;
 }
+
+// ─── UUID validator (used by every business action endpoint) ──────────
+export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// ─── Per-app product URL (for impersonation redirect target) ──────────
+/**
+ * Reads <SLUG>_APP_URL from env (e.g. POOLMATE_APP_URL). This is the
+ * URL that magic-link impersonation should redirect to. Returns null
+ * if not configured — endpoints that need it (impersonate) surface a
+ * clean error so the operator knows to add the env var.
+ */
+export function appUrl(slug: string, env: AdminEnv): string | null {
+  if (!slug || !SLUG_RE.test(slug)) return null;
+  const upper = slug.toUpperCase().replace(/-/g, "_");
+  return env[`${upper}_APP_URL`] || null;
+}
+
+// ─── Owner lookup ─────────────────────────────────────────────────────
+/**
+ * Resolves a business_id to its owner's auth user id + email. Returns
+ * null if the business doesn't exist or the owner_id has no auth user
+ * (orphan record).
+ */
+export async function getOwner(
+  app: { url: string; key: string },
+  businessId: string,
+): Promise<{ id: string; email: string } | null> {
+  if (!UUID_RE.test(businessId)) return null;
+  const rows = await pgrest<{ owner_id: string }[]>(
+    app,
+    `businesses?select=owner_id&id=eq.${businessId}`,
+  );
+  if (rows.length === 0) return null;
+  const ownerId = rows[0].owner_id;
+  if (!ownerId) return null;
+  // GET /auth/v1/admin/users/<id> returns the user directly
+  const res = await fetch(`${app.url}/auth/v1/admin/users/${ownerId}`, {
+    headers: { apikey: app.key, authorization: `Bearer ${app.key}` },
+  });
+  if (!res.ok) return null;
+  const body = await res.json() as { id?: string; email?: string };
+  if (!body.id || !body.email) return null;
+  return { id: body.id, email: body.email };
+}
+
+// ─── Operator identity (for audit log) ────────────────────────────────
+/**
+ * Identifies the operator who triggered the action. For now: a fixed
+ * placeholder string ("operator-passcode"), since the only auth in
+ * front of /admin is a shared passcode.
+ *
+ * When Cloudflare Access is wired in front of /admin, swap the body of
+ * this function to:
+ *   return req.headers.get("cf-access-authenticated-user-email") || "unknown";
+ * and the audit log will record the actual operator's email per request.
+ */
+export function operatorIdentity(_req: Request, _env: AdminEnv): string {
+  // TODO(cf-access): swap to cf-access-authenticated-user-email header
+  return "operator-passcode";
+}
+
+// ─── Audit log ────────────────────────────────────────────────────────
+interface LogActionArgs {
+  operator: string;
+  business_id: string | null;
+  action: string;
+  payload?: Record<string, unknown>;
+  ip?: string;
+}
+
+/**
+ * Writes one row to operator_actions. Best-effort — if logging fails
+ * (e.g. table missing on the target app, network blip), we log to
+ * console and do NOT throw. Audit-log unavailability shouldn't block
+ * legitimate operator work.
+ */
+export async function logAction(
+  app: { url: string; key: string },
+  args: LogActionArgs,
+): Promise<void> {
+  try {
+    await pgrest(app, "operator_actions", {
+      method: "POST",
+      body: JSON.stringify({
+        operator_email: args.operator,
+        business_id: args.business_id,
+        action: args.action,
+        payload: args.payload || {},
+        ip: args.ip || null,
+      }),
+      headers: { prefer: "return=minimal" },
+    });
+  } catch (err) {
+    console.warn("[admin] audit log write failed:", (err as Error).message);
+  }
+}
+
+/**
+ * Convenience: extract the caller's IP (set by Cloudflare on every
+ * request via the CF-Connecting-IP header).
+ */
+export function callerIp(req: Request): string {
+  return req.headers.get("cf-connecting-ip") || "";
+}

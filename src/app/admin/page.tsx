@@ -307,7 +307,13 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
             {/* Detail panel */}
             <div>
               {selected ? (
-                <DetailPanel passcode={passcode} app={activeApp} businessId={selected.id} key={selected.id} />
+                <DetailPanel
+                  passcode={passcode}
+                  app={activeApp}
+                  businessId={selected.id}
+                  onActionComplete={loadList}
+                  key={selected.id}
+                />
               ) : (
                 <div style={{ ...cardStyle2, padding: 24, color: "#6b7280", fontSize: 14 }}>
                   Select a business to see detail
@@ -321,12 +327,22 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
   );
 }
 
-function DetailPanel({ passcode, app, businessId }: { passcode: string; app: string; businessId: string }) {
+function DetailPanel({
+  passcode,
+  app,
+  businessId,
+  onActionComplete,
+}: {
+  passcode: string;
+  app: string;
+  businessId: string;
+  onActionComplete: () => void;
+}) {
   const [data, setData] = useState<DetailResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const refetch = useCallback(() => {
     setLoading(true);
     setError("");
     api<DetailResponse>(`/api/admin/business?app=${app}&id=${businessId}`, passcode)
@@ -334,6 +350,8 @@ function DetailPanel({ passcode, app, businessId }: { passcode: string; app: str
       .catch(err => setError(err instanceof Error ? err.message : "Failed"))
       .finally(() => setLoading(false));
   }, [passcode, app, businessId]);
+
+  useEffect(() => { refetch(); }, [refetch]);
 
   if (loading) return <div style={{ ...cardStyle2, padding: 24 }}><Loading /></div>;
   if (error) return <div style={{ ...cardStyle2, padding: 24, color: "#b91c1c", fontSize: 14 }}>{error}</div>;
@@ -405,6 +423,465 @@ function DetailPanel({ passcode, app, businessId }: { passcode: string; app: str
           </ul>
         )}
       </Section>
+
+      <OperatorActions
+        passcode={passcode}
+        app={app}
+        businessId={businessId}
+        currentPlan={business.plan}
+        ownerEmail={business.owner_email}
+        onActionComplete={() => { refetch(); onActionComplete(); }}
+      />
+    </div>
+  );
+}
+
+// ─── Operator actions panel ─────────────────────────────────────
+function OperatorActions({
+  passcode,
+  app,
+  businessId,
+  currentPlan,
+  ownerEmail,
+  onActionComplete,
+}: {
+  passcode: string;
+  app: string;
+  businessId: string;
+  currentPlan: string | null;
+  ownerEmail: string | null;
+  onActionComplete: () => void;
+}) {
+  type ModalKind = null | "reset" | "set" | "impersonate" | "plan";
+  const [modal, setModal] = useState<ModalKind>(null);
+
+  // Inline busy state for the trial-extension pills (no modal — one-click action)
+  const [extendBusy, setExtendBusy] = useState<number | null>(null);
+  const [extendError, setExtendError] = useState("");
+
+  async function postAction(path: string, body: object) {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${passcode}` },
+      body: JSON.stringify({ app, business_id: businessId, ...body }),
+    });
+    const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data?.error as string) || `Request failed: ${res.status}`);
+    return data;
+  }
+
+  async function extendTrial(days: 7 | 14 | 30) {
+    setExtendBusy(days);
+    setExtendError("");
+    try {
+      await postAction("/api/admin/business/extend-trial", { days });
+      onActionComplete();
+    } catch (err) {
+      setExtendError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setExtendBusy(null);
+    }
+  }
+
+  return (
+    <Section title="Operator actions">
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* Reset password */}
+        <ActionRow
+          label="Reset password"
+          hint={`Send recovery link to ${ownerEmail || "owner"}`}
+          buttonLabel="Reset"
+          onClick={() => setModal("reset")}
+        />
+
+        {/* Set new password directly */}
+        <ActionRow
+          label="Set new password"
+          hint="Operator types it, owner uses immediately"
+          buttonLabel="Set"
+          onClick={() => setModal("set")}
+        />
+
+        {/* Impersonate */}
+        <ActionRow
+          label="Impersonate owner"
+          hint="Magic-link URL to open in incognito"
+          buttonLabel="Generate"
+          onClick={() => setModal("impersonate")}
+        />
+
+        {/* Extend trial — three pill buttons inline */}
+        <div style={{ ...actionRowStyle, alignItems: "center" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={actionLabelStyle}>Extend trial</p>
+            <p style={actionHintStyle}>Bumps trial_ends_at forward</p>
+          </div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[7, 14, 30].map(d => (
+              <button
+                key={d}
+                onClick={() => extendTrial(d as 7 | 14 | 30)}
+                disabled={extendBusy !== null}
+                style={{
+                  ...pillButtonStyle,
+                  opacity: extendBusy !== null && extendBusy !== d ? 0.4 : 1,
+                }}
+              >
+                {extendBusy === d ? "…" : `+${d}d`}
+              </button>
+            ))}
+          </div>
+        </div>
+        {extendError && (
+          <p style={{ fontSize: 11, color: "#b91c1c", margin: "0 0 0 0" }}>{extendError}</p>
+        )}
+
+        {/* Change plan */}
+        <ActionRow
+          label="Change plan"
+          hint={`Currently: ${currentPlan || "trial"}`}
+          buttonLabel="Change"
+          onClick={() => setModal("plan")}
+        />
+      </div>
+
+      {modal === "reset" && (
+        <ResetPasswordModal
+          onClose={() => setModal(null)}
+          onSubmit={() => postAction("/api/admin/business/reset-password", {})}
+          onComplete={onActionComplete}
+        />
+      )}
+      {modal === "set" && (
+        <SetPasswordModal
+          onClose={() => setModal(null)}
+          onSubmit={(pw) => postAction("/api/admin/business/set-password", { new_password: pw })}
+          onComplete={onActionComplete}
+        />
+      )}
+      {modal === "impersonate" && (
+        <ImpersonateModal
+          onClose={() => setModal(null)}
+          onSubmit={() => postAction("/api/admin/business/impersonate", {})}
+          onComplete={onActionComplete}
+        />
+      )}
+      {modal === "plan" && (
+        <ChangePlanModal
+          currentPlan={currentPlan}
+          onClose={() => setModal(null)}
+          onSubmit={(plan) => postAction("/api/admin/business/change-plan", { new_plan: plan })}
+          onComplete={onActionComplete}
+        />
+      )}
+    </Section>
+  );
+}
+
+function ActionRow({ label, hint, buttonLabel, onClick }: { label: string; hint: string; buttonLabel: string; onClick: () => void }) {
+  return (
+    <div style={actionRowStyle}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={actionLabelStyle}>{label}</p>
+        <p style={actionHintStyle}>{hint}</p>
+      </div>
+      <button onClick={onClick} style={pillButtonStyle}>{buttonLabel}</button>
+    </div>
+  );
+}
+
+// ─── Modal shell ─────────────────────────────────────────────
+function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div style={modalBackdropStyle} onClick={onClose}>
+      <div style={modalCardStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{title}</h3>
+          <button onClick={onClose} style={modalCloseStyle} aria-label="Close">×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Reset password modal ────────────────────────────────────
+function ResetPasswordModal({ onClose, onSubmit, onComplete }: {
+  onClose: () => void;
+  onSubmit: () => Promise<Record<string, unknown>>;
+  onComplete: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{ link?: string; email?: string; emailSent?: boolean } | null>(null);
+
+  async function go() {
+    setBusy(true);
+    setError("");
+    try {
+      const r = await onSubmit();
+      setResult({
+        link: r.recovery_link as string | undefined,
+        email: r.owner_email as string | undefined,
+        emailSent: r.email_sent as boolean | undefined,
+      });
+      onComplete();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell title="Reset password" onClose={onClose}>
+      {!result ? (
+        <>
+          <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 12px" }}>
+            Sends a recovery email to the owner AND returns a one-time recovery link you can share directly.
+          </p>
+          {error && <p style={modalErrorStyle}>{error}</p>}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button onClick={onClose} style={modalGhostStyle}>Cancel</button>
+            <button onClick={go} disabled={busy} style={modalPrimaryStyle}>
+              {busy ? "Sending…" : "Send reset"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={modalSuccessBoxStyle}>
+            <p style={{ margin: 0, fontSize: 13, color: "#15803d", fontWeight: 600 }}>
+              ✓ Reset triggered for {result.email || "owner"}
+            </p>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#15803d" }}>
+              Email {result.emailSent ? "sent" : "FAILED — use the link below"}
+            </p>
+          </div>
+          {result.link && (
+            <>
+              <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: "#6b7280", margin: "0 0 6px" }}>
+                One-time recovery link
+              </p>
+              <CopyField value={result.link} />
+            </>
+          )}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 14 }}>
+            <button onClick={onClose} style={modalPrimaryStyle}>Done</button>
+          </div>
+        </>
+      )}
+    </ModalShell>
+  );
+}
+
+// ─── Set password modal ───────────────────────────────────────
+function SetPasswordModal({ onClose, onSubmit, onComplete }: {
+  onClose: () => void;
+  onSubmit: (pw: string) => Promise<Record<string, unknown>>;
+  onComplete: () => void;
+}) {
+  const [pw, setPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  async function go(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (pw.length < 6) return setError("Password must be at least 6 characters");
+    if (pw !== confirm) return setError("Passwords do not match");
+    setBusy(true);
+    try {
+      await onSubmit(pw);
+      setDone(true);
+      onComplete();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell title="Set new password" onClose={onClose}>
+      {done ? (
+        <>
+          <div style={modalSuccessBoxStyle}>
+            <p style={{ margin: 0, fontSize: 13, color: "#15803d", fontWeight: 600 }}>
+              ✓ Password updated
+            </p>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#15803d" }}>
+              Owner can sign in immediately. Communicate the new password out-of-band.
+            </p>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+            <button onClick={onClose} style={modalPrimaryStyle}>Done</button>
+          </div>
+        </>
+      ) : (
+        <form onSubmit={go} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+            Sets the owner's password. They can log in immediately. You'll need to tell them the new password yourself.
+          </p>
+          <input
+            type="password"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            placeholder="New password (min 6 chars)"
+            autoFocus
+            autoComplete="new-password"
+            style={inputStyle}
+          />
+          <input
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="Confirm password"
+            autoComplete="new-password"
+            style={inputStyle}
+          />
+          {error && <p style={modalErrorStyle}>{error}</p>}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button type="button" onClick={onClose} style={modalGhostStyle}>Cancel</button>
+            <button type="submit" disabled={busy || pw.length < 6} style={modalPrimaryStyle}>
+              {busy ? "Updating…" : "Update password"}
+            </button>
+          </div>
+        </form>
+      )}
+    </ModalShell>
+  );
+}
+
+// ─── Impersonate modal ────────────────────────────────────────
+function ImpersonateModal({ onClose, onSubmit, onComplete }: {
+  onClose: () => void;
+  onSubmit: () => Promise<Record<string, unknown>>;
+  onComplete: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [link, setLink] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+
+  async function go() {
+    setBusy(true);
+    setError("");
+    try {
+      const r = await onSubmit();
+      setLink((r.link as string) || null);
+      setEmail((r.owner_email as string) || null);
+      onComplete();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell title="Impersonate owner" onClose={onClose}>
+      {!link ? (
+        <>
+          <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 12px" }}>
+            Generates a one-time magic-link URL. Open it in an <strong>incognito window</strong> for proper session isolation — clicking in your normal window will replace your operator session with the owner's.
+          </p>
+          {error && <p style={modalErrorStyle}>{error}</p>}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button onClick={onClose} style={modalGhostStyle}>Cancel</button>
+            <button onClick={go} disabled={busy} style={modalPrimaryStyle}>
+              {busy ? "Generating…" : "Generate link"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={modalSuccessBoxStyle}>
+            <p style={{ margin: 0, fontSize: 13, color: "#15803d", fontWeight: 600 }}>
+              ✓ Magic link ready for {email || "owner"}
+            </p>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#15803d" }}>
+              Single-use. Open in an incognito window.
+            </p>
+          </div>
+          <CopyField value={link} />
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 14 }}>
+            <button onClick={() => window.open(link, "_blank")} style={modalGhostStyle}>
+              Open in new tab
+            </button>
+            <button onClick={onClose} style={modalPrimaryStyle}>Done</button>
+          </div>
+        </>
+      )}
+    </ModalShell>
+  );
+}
+
+// ─── Change plan modal ────────────────────────────────────────
+function ChangePlanModal({ currentPlan, onClose, onSubmit, onComplete }: {
+  currentPlan: string | null;
+  onClose: () => void;
+  onSubmit: (plan: string) => Promise<Record<string, unknown>>;
+  onComplete: () => void;
+}) {
+  const [plan, setPlan] = useState(currentPlan || "trial");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function go(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await onSubmit(plan);
+      onComplete();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell title="Change plan" onClose={onClose}>
+      <form onSubmit={go} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+          Sets the plan field directly. Use for manual subscription handling pre-Stripe, or to reset a tenant for testing.
+        </p>
+        <select value={plan} onChange={(e) => setPlan(e.target.value)} style={selectStyle}>
+          {["trial", "starter", "crew", "pro", "business"].map(p => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+        {error && <p style={modalErrorStyle}>{error}</p>}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button type="button" onClick={onClose} style={modalGhostStyle}>Cancel</button>
+          <button type="submit" disabled={busy || plan === currentPlan} style={modalPrimaryStyle}>
+            {busy ? "Saving…" : "Apply"}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+// ─── Copy-to-clipboard field ──────────────────────────────────
+function CopyField({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      <input value={value} readOnly style={{ ...inputStyle, fontSize: 11, fontFamily: "monospace" }} />
+      <button onClick={copy} style={{ ...modalGhostStyle, minWidth: 70 }}>
+        {copied ? "Copied!" : "Copy"}
+      </button>
     </div>
   );
 }
@@ -488,3 +965,16 @@ const listRowStyle: React.CSSProperties = { display: "flex", alignItems: "center
 const miniGridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 };
 const miniRowStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, padding: "6px 0" };
 const pillStyle: React.CSSProperties = { fontSize: 9, fontWeight: 700, color: "#15803d", background: "#dcfce7", padding: "2px 6px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.5 };
+// ─── Operator actions styles ─────────────────────────────────
+const actionRowStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, padding: "8px 0" };
+const actionLabelStyle: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: "#0f1218", margin: 0 };
+const actionHintStyle: React.CSSProperties = { fontSize: 11, color: "#6b7280", margin: "2px 0 0" };
+const pillButtonStyle: React.CSSProperties = { padding: "5px 12px", fontSize: 11, fontWeight: 600, color: "#374151", background: "white", border: "1px solid #e5e7eb", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap" };
+// Modal
+const modalBackdropStyle: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(15, 18, 24, 0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 100 };
+const modalCardStyle: React.CSSProperties = { width: "100%", maxWidth: 440, background: "white", borderRadius: 14, padding: 20, boxShadow: "0 20px 60px rgba(0, 0, 0, 0.25)" };
+const modalCloseStyle: React.CSSProperties = { background: "transparent", border: "none", fontSize: 22, color: "#9ca3af", cursor: "pointer", lineHeight: 1, padding: "0 4px" };
+const modalPrimaryStyle: React.CSSProperties = { padding: "8px 16px", fontSize: 13, fontWeight: 600, color: "white", background: "#15803d", border: "none", borderRadius: 8, cursor: "pointer" };
+const modalGhostStyle: React.CSSProperties = { padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#374151", background: "white", border: "1px solid #e5e7eb", borderRadius: 8, cursor: "pointer" };
+const modalErrorStyle: React.CSSProperties = { fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", margin: 0 };
+const modalSuccessBoxStyle: React.CSSProperties = { background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 12px", marginBottom: 12 };

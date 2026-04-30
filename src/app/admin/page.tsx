@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { PRODUCTS } from "@/lib/products";
 
 // ─── Types ───────────────────────────────────────────────
 type BusinessRow = {
@@ -43,10 +44,12 @@ type DetailResponse = {
   recent_clients: { id: string; name: string; email: string | null; created_at: string }[];
 };
 
-const APPS = [
-  { slug: "poolmate", label: "PoolMate" },
-  // Add more here as they come online: treemate, awc, etc.
-];
+// Drive the app picker from the marketing site's product registry, so
+// adding a product anywhere in PRODUCTS (lib/products.ts) automatically
+// makes it available here. The Pages Function will return a clean error
+// if the corresponding *_SUPABASE_URL / *_SUPABASE_SERVICE_KEY env vars
+// aren't configured yet.
+const APPS = PRODUCTS.map((p) => ({ slug: p.slug, label: p.name }));
 
 const PASSCODE_KEY = "fs-admin-passcode";
 
@@ -151,7 +154,9 @@ function Gate({ onAuthed }: { onAuthed: (passcode: string) => void }) {
 
 // ─── Main dashboard ──────────────────────────────────────
 function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () => void }) {
-  const [activeApp, setActiveApp] = useState(APPS[0].slug);
+  // Widen to plain string so picking a different app from the dropdown
+  // doesn't fight the literal union from PRODUCTS.
+  const [activeApp, setActiveApp] = useState<string>(APPS[0].slug);
   const [data, setData] = useState<BusinessesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

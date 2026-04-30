@@ -5,22 +5,27 @@
 //   2. Resolve the requested app slug → that app's Supabase URL + service key
 //   3. Return JSON with no-store cache
 //
-// Per-app env vars expected in Cloudflare Pages settings:
-//   ADMIN_PASSCODE                    — shared operator secret
-//   POOLMATE_SUPABASE_URL             — https://<project>.supabase.co
-//   POOLMATE_SUPABASE_SERVICE_KEY     — service_role key (NOT anon!)
-// Add per-app keys for additional products as they come online:
-//   TREEMATE_SUPABASE_URL, TREEMATE_SUPABASE_SERVICE_KEY, etc.
+// Env var convention (set in Cloudflare Pages → Settings → Environment
+// variables): ADMIN_PASSCODE plus a pair per product, derived from slug:
+//
+//   ADMIN_PASSCODE                              shared operator secret
+//   <SLUG>_SUPABASE_URL                         https://<project>.supabase.co
+//   <SLUG>_SUPABASE_SERVICE_KEY                 service_role key (NOT anon!)
+//
+// e.g. POOLMATE_SUPABASE_URL, TREEMATE_SUPABASE_URL, FIREMATE_SUPABASE_URL,
+// PESTMATE_SUPABASE_URL, HYGIENEMATE_SUPABASE_URL, LOCKSMITHMATE_SUPABASE_URL.
+// Adding a new product requires no code change here — just add the two env
+// vars in Pages settings and add the slug to APPS in src/app/admin/page.tsx
+// (or import directly from src/lib/products).
 
+// Index signature so any <SLUG>_SUPABASE_* lookup type-checks. We only
+// surface the operator passcode explicitly because it's used by name.
 export interface AdminEnv {
   ADMIN_PASSCODE?: string;
-  POOLMATE_SUPABASE_URL?: string;
-  POOLMATE_SUPABASE_SERVICE_KEY?: string;
-  TREEMATE_SUPABASE_URL?: string;
-  TREEMATE_SUPABASE_SERVICE_KEY?: string;
+  [key: string]: string | undefined;
 }
 
-export type AppSlug = "poolmate" | "treemate";
+export type AppSlug = string;
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -57,22 +62,26 @@ export async function checkPasscode(req: Request, env: AdminEnv): Promise<boolea
   return diff === 0;
 }
 
+// Constrains the slug to letters/digits/hyphens so we can safely build
+// the env var name. Anything else returns null (rejected by callers).
+const SLUG_RE = /^[a-z0-9-]+$/;
+
 /**
- * Resolves an app slug to its Supabase URL + service key. Returns null
- * if the env vars for that app aren't configured (so admins see a clean
- * "app not configured" error rather than the request hanging).
+ * Resolves an app slug to its Supabase URL + service key. Looks up env
+ * vars by deriving them from the slug:
+ *   poolmate → POOLMATE_SUPABASE_URL, POOLMATE_SUPABASE_SERVICE_KEY
+ * Returns null if the env vars for that app aren't configured (so the
+ * admin UI shows a clean "app not configured" error rather than hanging).
  */
 export function resolveApp(slug: string, env: AdminEnv): { url: string; key: string; slug: AppSlug } | null {
-  switch (slug) {
-    case "poolmate":
-      if (!env.POOLMATE_SUPABASE_URL || !env.POOLMATE_SUPABASE_SERVICE_KEY) return null;
-      return { url: env.POOLMATE_SUPABASE_URL, key: env.POOLMATE_SUPABASE_SERVICE_KEY, slug: "poolmate" };
-    case "treemate":
-      if (!env.TREEMATE_SUPABASE_URL || !env.TREEMATE_SUPABASE_SERVICE_KEY) return null;
-      return { url: env.TREEMATE_SUPABASE_URL, key: env.TREEMATE_SUPABASE_SERVICE_KEY, slug: "treemate" };
-    default:
-      return null;
-  }
+  if (!slug || !SLUG_RE.test(slug)) return null;
+  // Slugs in env are upper-case with hyphens replaced by underscores so
+  // they're valid env identifiers (e.g. "loc-test" → "LOC_TEST_*").
+  const upper = slug.toUpperCase().replace(/-/g, "_");
+  const url = env[`${upper}_SUPABASE_URL`];
+  const key = env[`${upper}_SUPABASE_SERVICE_KEY`];
+  if (!url || !key) return null;
+  return { url, key, slug };
 }
 
 /**

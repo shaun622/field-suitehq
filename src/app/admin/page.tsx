@@ -916,6 +916,7 @@ function DeleteBusinessModal({ businessName, onClose, onSubmit, onComplete }: {
   const [confirmText, setConfirmText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [result, setResult] = useState<{ authDeleted: boolean; reason: string | null } | null>(null);
 
   // Case-insensitive trimmed compare so the operator doesn't have to
   // match capitalisation perfectly. Server enforces the same check.
@@ -927,13 +928,53 @@ function DeleteBusinessModal({ businessName, onClose, onSubmit, onComplete }: {
     setBusy(true);
     setError("");
     try {
-      await onSubmit(confirmText.trim());
+      const r = await onSubmit(confirmText.trim());
+      setResult({
+        authDeleted: !!r.auth_user_deleted,
+        reason: (r.auth_not_deleted_reason as string | null) || null,
+      });
       onComplete();
-      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
       setBusy(false);
     }
+  }
+
+  // Result screen — show after the cascade succeeds, before the modal closes.
+  if (result) {
+    return (
+      <ModalShell title="Business deleted" onClose={onClose}>
+        <div style={modalSuccessBoxStyle}>
+          <p style={{ margin: 0, fontSize: 13, color: "#15803d", fontWeight: 600 }}>
+            ✓ {businessName} and all its data removed
+          </p>
+        </div>
+        <div style={{ marginTop: 10, padding: "10px 12px", background: result.authDeleted ? "#f0fdf4" : "#fefce8", border: `1px solid ${result.authDeleted ? "#bbf7d0" : "#fde68a"}`, borderRadius: 10 }}>
+          {result.authDeleted ? (
+            <>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#15803d" }}>
+                ✓ Owner auth account deleted
+              </p>
+              <p style={{ margin: "4px 0 0", fontSize: 11, color: "#166534" }}>
+                The email is now free to be reused for a new signup or staff login.
+              </p>
+            </>
+          ) : (
+            <>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#854d0e" }}>
+                ⚠ Owner auth account kept
+              </p>
+              <p style={{ margin: "4px 0 0", fontSize: 11, color: "#713f12" }}>
+                {result.reason || "auth user retained"}. The email cannot be reused until the auth user is removed manually.
+              </p>
+            </>
+          )}
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+          <button onClick={onClose} style={modalPrimaryStyle}>Done</button>
+        </div>
+      </ModalShell>
+    );
   }
 
   return (
@@ -941,7 +982,7 @@ function DeleteBusinessModal({ businessName, onClose, onSubmit, onComplete }: {
       <div style={modalDangerBoxStyle}>
         <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#991b1b" }}>This cannot be undone.</p>
         <p style={{ margin: "6px 0 0", fontSize: 12, color: "#7f1d1d", lineHeight: 1.5 }}>
-          Permanently deletes <strong>{businessName}</strong> and every row that references it: clients, pools, jobs, recurring profiles, quotes, invoices, service records (chemicals, photos, tasks), staff, automations, surveys, documents, templates. The owner&apos;s auth account is left intact — they can sign up again or use it for another tenant.
+          Permanently deletes <strong>{businessName}</strong> and every row that references it: clients, pools, jobs, recurring profiles, quotes, invoices, service records (chemicals, photos, tasks), staff, automations, surveys, documents, templates. The owner&apos;s auth account is also removed so the email can be reused — unless they own another business or are a staff member elsewhere, in which case the auth user is preserved.
         </p>
       </div>
       <form onSubmit={go} style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>

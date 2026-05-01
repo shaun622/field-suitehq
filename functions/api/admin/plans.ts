@@ -2,10 +2,14 @@
 //
 // Returns every plan tier for the requested app, including inactive
 // ones (so the operator can see what's been hidden and re-enable it).
-// Used by the HQ Plans panel.
+// Used by the HQ Plans panel and the ChangePlanModal dropdown.
 //
 // Customer-facing apps fetch their own plans table directly via the
 // anon key — they don't go through this Pages Function.
+//
+// Lives at admin/plans.ts (not admin/plans/list.ts) so the URL is
+// /api/admin/plans rather than /api/admin/plans/list. Mirrors the
+// admin/business.ts vs admin/business/* split for the same reason.
 
 import {
   checkPasscode,
@@ -14,7 +18,7 @@ import {
   resolveApp,
   unauthorized,
   type AdminEnv,
-} from "../_shared";
+} from "./_shared";
 
 interface PlanRow {
   slug: string;

@@ -27,6 +27,7 @@ interface FullBusiness {
   brand_colour: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  staff_seat_override: number | null;
 }
 
 export const onRequestGet: PagesFunction<AdminEnv> = async ({ request, env }) => {
@@ -52,7 +53,7 @@ export const onRequestGet: PagesFunction<AdminEnv> = async ({ request, env }) =>
     const [bizRows, clients, staff, jobs] = await Promise.all([
       pgrest<FullBusiness[]>(
         app,
-        `businesses?select=id,owner_id,name,email,plan,created_at,trial_ends_at,abn,phone,logo_url,brand_colour,stripe_customer_id,stripe_subscription_id&id=eq.${businessId}`,
+        `businesses?select=id,owner_id,name,email,plan,created_at,trial_ends_at,abn,phone,logo_url,brand_colour,stripe_customer_id,stripe_subscription_id,staff_seat_override&id=eq.${businessId}`,
       ),
       pgrest<{ id: string; name: string; email: string | null; created_at: string }[]>(
         app,

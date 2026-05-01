@@ -38,11 +38,26 @@ type DetailResponse = {
     brand_colour: string | null;
     stripe_customer_id: string | null;
     stripe_subscription_id: string | null;
+    staff_seat_override: number | null;
   };
   staff: { id: string; name: string; role: string; email: string | null; user_id: string | null; is_active: boolean }[];
   recent_jobs: { id: string; title: string; status: string; scheduled_date: string | null; created_at: string }[];
   recent_clients: { id: string; name: string; email: string | null; created_at: string }[];
 };
+
+// Tiny embedded plan→max_staff map for Phase 1. Phase 2 swaps this for
+// a DB-loaded plans catalog so editing a plan in the admin propagates
+// to this UI automatically.
+const PLAN_DEFAULT_SEATS: Record<string, number> = {
+  trial: 1,
+  starter: 2,
+  pro: 10,
+};
+function effectiveSeatLimit(plan: string | null, override: number | null): number {
+  if (override != null) return override;
+  if (plan && PLAN_DEFAULT_SEATS[plan] != null) return PLAN_DEFAULT_SEATS[plan];
+  return 1;
+}
 
 // Drive the app picker from the marketing site's product registry, so
 // adding a product anywhere in PRODUCTS (lib/products.ts) automatically
@@ -366,7 +381,22 @@ function DetailPanel({
       <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>{business.owner_email || "—"}</p>
 
       <div style={miniGridStyle}>
-        <MiniStat label="Plan" value={<PlanBadge plan={business.plan} trialEndsAt={business.trial_ends_at} />} />
+        <MiniStat
+          label="Plan"
+          value={
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <PlanBadge plan={business.plan} trialEndsAt={business.trial_ends_at} />
+              <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 500 }}>
+                × {effectiveSeatLimit(business.plan, business.staff_seat_override)} seats
+              </span>
+              {business.staff_seat_override != null && (
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#7c2d12", background: "#ffedd5", padding: "2px 5px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  override
+                </span>
+              )}
+            </span>
+          }
+        />
         <MiniStat label="Created" value={fmtDate(business.created_at)} />
         <MiniStat label="Clients" value={business.client_count} />
         <MiniStat label="Jobs" value={business.job_count} />
@@ -439,6 +469,7 @@ function DetailPanel({
         businessId={businessId}
         businessName={business.name}
         currentPlan={business.plan}
+        currentSeatOverride={business.staff_seat_override}
         ownerEmail={business.owner_email}
         onActionComplete={() => { refetch(); onActionComplete(); }}
         onDeleted={onActionComplete}
@@ -454,6 +485,7 @@ function OperatorActions({
   businessId,
   businessName,
   currentPlan,
+  currentSeatOverride,
   ownerEmail,
   onActionComplete,
   onDeleted,
@@ -463,11 +495,12 @@ function OperatorActions({
   businessId: string;
   businessName: string;
   currentPlan: string | null;
+  currentSeatOverride: number | null;
   ownerEmail: string | null;
   onActionComplete: () => void;
   onDeleted: () => void;
 }) {
-  type ModalKind = null | "reset" | "set" | "impersonate" | "plan" | "delete";
+  type ModalKind = null | "reset" | "set" | "impersonate" | "plan" | "delete" | "seats";
   const [modal, setModal] = useState<ModalKind>(null);
 
   // Inline busy state for the trial-extension pills (no modal — one-click action)
@@ -559,6 +592,18 @@ function OperatorActions({
           onClick={() => setModal("plan")}
         />
 
+        {/* Staff seat override — per-business hand-tune of the plan default */}
+        <ActionRow
+          label="Staff seat override"
+          hint={
+            currentSeatOverride != null
+              ? `Currently: ${currentSeatOverride} seats (override)`
+              : `Currently: plan default (${effectiveSeatLimit(currentPlan, null)} seats)`
+          }
+          buttonLabel={currentSeatOverride != null ? "Change" : "Set"}
+          onClick={() => setModal("seats")}
+        />
+
         {/* Delete business — destructive, visually separated and red-tinted */}
         <div style={{ marginTop: 6, paddingTop: 10, borderTop: "1px dashed #fecaca" }}>
           <div style={actionRowStyle}>
@@ -602,6 +647,15 @@ function OperatorActions({
           currentPlan={currentPlan}
           onClose={() => setModal(null)}
           onSubmit={(plan) => postAction("/api/admin/business/change-plan", { new_plan: plan })}
+          onComplete={onActionComplete}
+        />
+      )}
+      {modal === "seats" && (
+        <StaffOverrideModal
+          currentPlan={currentPlan}
+          currentOverride={currentSeatOverride}
+          onClose={() => setModal(null)}
+          onSubmit={(override) => postAction("/api/admin/business/set-staff-override", { override })}
           onComplete={onActionComplete}
         />
       )}
@@ -900,6 +954,112 @@ function ChangePlanModal({ currentPlan, onClose, onSubmit, onComplete }: {
           <button type="submit" disabled={busy || plan === currentPlan} style={modalPrimaryStyle}>
             {busy ? "Saving…" : "Apply"}
           </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+// ─── Staff seat override modal ────────────────────────────────
+function StaffOverrideModal({ currentPlan, currentOverride, onClose, onSubmit, onComplete }: {
+  currentPlan: string | null;
+  currentOverride: number | null;
+  onClose: () => void;
+  onSubmit: (override: number | null) => Promise<Record<string, unknown>>;
+  onComplete: () => void;
+}) {
+  // Initial value: if an override is set, show it; otherwise pre-fill with the plan default.
+  const planDefault = effectiveSeatLimit(currentPlan, null);
+  const [value, setValue] = useState<string>(
+    currentOverride != null ? String(currentOverride) : String(planDefault),
+  );
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  function parsed(): number | null {
+    const t = value.trim();
+    if (t === "") return NaN;
+    const n = Number(t);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > 1000) return NaN;
+    return n;
+  }
+
+  async function setOverride(e: React.FormEvent) {
+    e.preventDefault();
+    const n = parsed();
+    if (typeof n !== "number" || Number.isNaN(n)) {
+      setError("Enter a non-negative integer up to 1000");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await onSubmit(n);
+      onComplete();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+      setBusy(false);
+    }
+  }
+
+  async function clearOverride() {
+    setBusy(true);
+    setError("");
+    try {
+      await onSubmit(null);
+      onComplete();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell title="Staff seat override" onClose={onClose}>
+      <form onSubmit={setOverride} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+          Plan default for <strong>{currentPlan || "trial"}</strong> is <strong>{planDefault}</strong>{" "}
+          {planDefault === 1 ? "seat" : "seats"}. Overriding affects only this business.
+        </p>
+        <label style={{ fontSize: 12, color: "#374151" }}>
+          Override seat limit
+          <span style={{ display: "block", fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
+            0 means no staff allowed. 1000 max.
+          </span>
+        </label>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={1000}
+          step={1}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          autoFocus
+          style={inputStyle}
+        />
+        {error && <p style={modalErrorStyle}>{error}</p>}
+        <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
+          {currentOverride != null ? (
+            <button
+              type="button"
+              onClick={clearOverride}
+              disabled={busy}
+              style={{ ...modalGhostStyle, color: "#b91c1c", borderColor: "#fecaca" }}
+            >
+              Clear override
+            </button>
+          ) : (
+            <span />
+          )}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={onClose} style={modalGhostStyle}>Cancel</button>
+            <button type="submit" disabled={busy} style={modalPrimaryStyle}>
+              {busy ? "Saving…" : "Set override"}
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { PRODUCTS } from "@/lib/products";
+// PRODUCTS (marketing registry) intentionally NOT imported — APPS
+// below is the HQ admin's Supabase-instance registry, which doesn't
+// 1:1 with marketing products (e.g. AWC's four divisions = 1 Supabase).
 
 // ─── Types ───────────────────────────────────────────────
 type BusinessRow = {
@@ -59,12 +61,34 @@ function effectiveSeatLimit(plan: string | null, override: number | null): numbe
   return 1;
 }
 
-// Drive the app picker from the marketing site's product registry, so
-// adding a product anywhere in PRODUCTS (lib/products.ts) automatically
-// makes it available here. The Pages Function will return a clean error
-// if the corresponding *_SUPABASE_URL / *_SUPABASE_SERVICE_KEY env vars
-// aren't configured yet.
-const APPS = PRODUCTS.map((p) => ({ slug: p.slug, label: p.name }));
+// HQ admin slugs map to *Supabase instances*, not marketing products.
+// PRODUCTS in lib/products.ts is the marketing source of truth and
+// includes division-level entries (firemate / pestmate / hygienemate /
+// locksmithmate) that all live inside the same AWC Supabase. We collapse
+// those into a single `awc` entry here because (a) clients and staff
+// are Group-wide in AWC's schema, and (b) plan limits + seat overrides
+// apply per business, not per division. Operators manage AWC tenants
+// once and the divisions surface inside the panel.
+//
+// Env var convention (set in Cloudflare Pages → Settings → Environment):
+//   <SLUG>_SUPABASE_URL
+//   <SLUG>_SUPABASE_SERVICE_KEY
+//   <SLUG>_APP_URL
+// Pages Function returns a clean "app not configured" error if a
+// slug is registered here but its env vars are missing.
+//
+// CAVEAT for `proline`: ProLine's Supabase uses singular `business`
+// (not `businesses`) and lacks the staff_members/pools/quotes schema
+// the cascade-delete walks. Most endpoints will return PostgREST 404s
+// until a per-app table-name resolver is added (TODO). The plans panel
+// + plan-catalog endpoints work fine since the `plans` table is the
+// same shape across apps.
+const APPS = [
+  { slug: "poolmate", label: "PoolMate" },
+  { slug: "treemate", label: "TreeMate" },
+  { slug: "awc",      label: "AWC Group" },
+  { slug: "proline",  label: "ProLine CHCH" },
+];
 
 const PASSCODE_KEY = "fs-admin-passcode";
 
@@ -169,8 +193,6 @@ function Gate({ onAuthed }: { onAuthed: (passcode: string) => void }) {
 
 // ─── Main dashboard ──────────────────────────────────────
 function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () => void }) {
-  // Widen to plain string so picking a different app from the dropdown
-  // doesn't fight the literal union from PRODUCTS.
   const [activeApp, setActiveApp] = useState<string>(APPS[0].slug);
   const [view, setView] = useState<"businesses" | "plans">("businesses");
   const [data, setData] = useState<BusinessesResponse | null>(null);

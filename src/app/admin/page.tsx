@@ -260,7 +260,7 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
                 <span style={{ flex: 1 }}>Business / Owner</span>
                 <span style={{ width: 90 }}>Plan</span>
                 <span style={{ width: 70, textAlign: "right" }}>Clients</span>
-                <span style={{ width: 70, textAlign: "right" }}>Jobs</span>
+                <span style={{ width: 70, textAlign: "right" }}>Staff</span>
                 <span style={{ width: 110, textAlign: "right" }}>Last job</span>
               </div>
               {filtered.length === 0 ? (
@@ -292,7 +292,7 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
                             <PlanBadge plan={b.plan} trialEndsAt={b.trial_ends_at} />
                           </span>
                           <span style={{ width: 70, textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13 }}>{b.client_count}</span>
-                          <span style={{ width: 70, textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13 }}>{b.job_count}</span>
+                          <span style={{ width: 70, textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13 }}>{b.active_staff_count}</span>
                           <span style={{ width: 110, textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 12, color: "#6b7280" }}>
                             {b.last_job_at ? new Date(b.last_job_at).toLocaleDateString("en-AU", { day: "numeric", month: "short" }) : "—"}
                           </span>
@@ -384,13 +384,22 @@ function DetailPanel({
         {staff.length === 0 ? <Empty /> : (
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {staff.map(s => (
-              <li key={s.id} style={miniRowStyle}>
-                <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>
-                  {s.name}
-                  {!s.is_active && <span style={{ color: "#9ca3af", marginLeft: 6 }}>(inactive)</span>}
+              <li key={s.id} style={{ ...miniRowStyle, alignItems: "flex-start", padding: "8px 0" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0f1218", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {s.name}
+                    </span>
+                    {!s.is_active && <span style={{ fontSize: 10, color: "#9ca3af", fontStyle: "italic" }}>inactive</span>}
+                    {s.user_id && <span style={pillStyle}>login</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {s.email || <span style={{ color: "#d1d5db" }}>no email</span>}
+                  </div>
+                </div>
+                <span style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 600, marginTop: 2 }}>
+                  {s.role}
                 </span>
-                <span style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{s.role}</span>
-                {s.user_id && <span style={pillStyle}>login</span>}
               </li>
             ))}
           </ul>
@@ -428,9 +437,11 @@ function DetailPanel({
         passcode={passcode}
         app={app}
         businessId={businessId}
+        businessName={business.name}
         currentPlan={business.plan}
         ownerEmail={business.owner_email}
         onActionComplete={() => { refetch(); onActionComplete(); }}
+        onDeleted={onActionComplete}
       />
     </div>
   );
@@ -441,18 +452,22 @@ function OperatorActions({
   passcode,
   app,
   businessId,
+  businessName,
   currentPlan,
   ownerEmail,
   onActionComplete,
+  onDeleted,
 }: {
   passcode: string;
   app: string;
   businessId: string;
+  businessName: string;
   currentPlan: string | null;
   ownerEmail: string | null;
   onActionComplete: () => void;
+  onDeleted: () => void;
 }) {
-  type ModalKind = null | "reset" | "set" | "impersonate" | "plan";
+  type ModalKind = null | "reset" | "set" | "impersonate" | "plan" | "delete";
   const [modal, setModal] = useState<ModalKind>(null);
 
   // Inline busy state for the trial-extension pills (no modal — one-click action)
@@ -543,6 +558,22 @@ function OperatorActions({
           buttonLabel="Change"
           onClick={() => setModal("plan")}
         />
+
+        {/* Delete business — destructive, visually separated and red-tinted */}
+        <div style={{ marginTop: 6, paddingTop: 10, borderTop: "1px dashed #fecaca" }}>
+          <div style={actionRowStyle}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ ...actionLabelStyle, color: "#b91c1c" }}>Delete business</p>
+              <p style={actionHintStyle}>Permanently removes the tenant and all its data</p>
+            </div>
+            <button
+              onClick={() => setModal("delete")}
+              style={{ ...pillButtonStyle, color: "#b91c1c", borderColor: "#fecaca", background: "#fef2f2" }}
+            >
+              Delete…
+            </button>
+          </div>
+        </div>
       </div>
 
       {modal === "reset" && (
@@ -572,6 +603,14 @@ function OperatorActions({
           onClose={() => setModal(null)}
           onSubmit={(plan) => postAction("/api/admin/business/change-plan", { new_plan: plan })}
           onComplete={onActionComplete}
+        />
+      )}
+      {modal === "delete" && (
+        <DeleteBusinessModal
+          businessName={businessName}
+          onClose={() => setModal(null)}
+          onSubmit={(confirmName) => postAction("/api/admin/business/delete", { confirm_name: confirmName })}
+          onComplete={onDeleted}
         />
       )}
     </Section>
@@ -867,6 +906,77 @@ function ChangePlanModal({ currentPlan, onClose, onSubmit, onComplete }: {
   );
 }
 
+// ─── Delete business modal ────────────────────────────────────
+function DeleteBusinessModal({ businessName, onClose, onSubmit, onComplete }: {
+  businessName: string;
+  onClose: () => void;
+  onSubmit: (confirmName: string) => Promise<Record<string, unknown>>;
+  onComplete: () => void;
+}) {
+  const [confirmText, setConfirmText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  // Case-insensitive trimmed compare so the operator doesn't have to
+  // match capitalisation perfectly. Server enforces the same check.
+  const matches = confirmText.trim().toLowerCase() === (businessName || "").trim().toLowerCase();
+
+  async function go(e: React.FormEvent) {
+    e.preventDefault();
+    if (!matches) return;
+    setBusy(true);
+    setError("");
+    try {
+      await onSubmit(confirmText.trim());
+      onComplete();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell title="Delete business" onClose={onClose}>
+      <div style={modalDangerBoxStyle}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#991b1b" }}>This cannot be undone.</p>
+        <p style={{ margin: "6px 0 0", fontSize: 12, color: "#7f1d1d", lineHeight: 1.5 }}>
+          Permanently deletes <strong>{businessName}</strong> and every row that references it: clients, pools, jobs, recurring profiles, quotes, invoices, service records (chemicals, photos, tasks), staff, automations, surveys, documents, templates. The owner&apos;s auth account is left intact — they can sign up again or use it for another tenant.
+        </p>
+      </div>
+      <form onSubmit={go} style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        <label style={{ fontSize: 12, color: "#374151" }}>
+          To confirm, type the business name exactly:
+          <span style={{ display: "block", fontSize: 11, color: "#6b7280", marginTop: 2, fontFamily: "monospace" }}>{businessName}</span>
+        </label>
+        <input
+          autoFocus
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="Type the business name"
+          style={inputStyle}
+          autoComplete="off"
+        />
+        {error && <p style={modalErrorStyle}>{error}</p>}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button type="button" onClick={onClose} style={modalGhostStyle}>Cancel</button>
+          <button
+            type="submit"
+            disabled={!matches || busy}
+            style={{
+              ...modalPrimaryStyle,
+              background: !matches || busy ? "#fca5a5" : "#dc2626",
+              cursor: !matches || busy ? "not-allowed" : "pointer",
+            }}
+          >
+            {busy ? "Deleting…" : "Delete forever"}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
 // ─── Copy-to-clipboard field ──────────────────────────────────
 function CopyField({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -978,3 +1088,4 @@ const modalPrimaryStyle: React.CSSProperties = { padding: "8px 16px", fontSize: 
 const modalGhostStyle: React.CSSProperties = { padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#374151", background: "white", border: "1px solid #e5e7eb", borderRadius: 8, cursor: "pointer" };
 const modalErrorStyle: React.CSSProperties = { fontSize: 12, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", margin: 0 };
 const modalSuccessBoxStyle: React.CSSProperties = { background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 12px", marginBottom: 12 };
+const modalDangerBoxStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "12px 14px" };

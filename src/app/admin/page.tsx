@@ -172,6 +172,7 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
   // Widen to plain string so picking a different app from the dropdown
   // doesn't fight the literal union from PRODUCTS.
   const [activeApp, setActiveApp] = useState<string>(APPS[0].slug);
+  const [view, setView] = useState<"businesses" | "plans">("businesses");
   const [data, setData] = useState<BusinessesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -226,6 +227,27 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
           <h1 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{activeApp.toUpperCase()}</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* View toggle: businesses (default) vs plans catalog */}
+          <div style={{ display: "flex", gap: 4, padding: 2, background: "#f3f4f6", borderRadius: 8 }}>
+            <button
+              onClick={() => setView("businesses")}
+              style={{
+                padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, cursor: "pointer",
+                background: view === "businesses" ? "white" : "transparent",
+                color: view === "businesses" ? "#0f1218" : "#6b7280",
+                boxShadow: view === "businesses" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+              }}
+            >Businesses</button>
+            <button
+              onClick={() => setView("plans")}
+              style={{
+                padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, cursor: "pointer",
+                background: view === "plans" ? "white" : "transparent",
+                color: view === "plans" ? "#0f1218" : "#6b7280",
+                boxShadow: view === "plans" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+              }}
+            >Plans</button>
+          </div>
           <select
             value={activeApp}
             onChange={(e) => setActiveApp(e.target.value)}
@@ -238,6 +260,9 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
       </header>
 
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "24px 24px 48px" }}>
+        {view === "plans" ? (
+          <PlansPanel app={activeApp} passcode={passcode} />
+        ) : (<>
         {/* KPIs */}
         {data && (
           <div style={kpiGridStyle}>
@@ -337,6 +362,7 @@ function Dashboard({ passcode, onSignOut }: { passcode: string; onSignOut: () =>
             </div>
           </div>
         )}
+        </>)}
       </main>
     </div>
   );
@@ -645,6 +671,8 @@ function OperatorActions({
       {modal === "plan" && (
         <ChangePlanModal
           currentPlan={currentPlan}
+          passcode={passcode}
+          app={app}
           onClose={() => setModal(null)}
           onSubmit={(plan) => postAction("/api/admin/business/change-plan", { new_plan: plan })}
           onComplete={onActionComplete}
@@ -913,8 +941,10 @@ function ImpersonateModal({ onClose, onSubmit, onComplete }: {
 }
 
 // ─── Change plan modal ────────────────────────────────────────
-function ChangePlanModal({ currentPlan, onClose, onSubmit, onComplete }: {
+function ChangePlanModal({ currentPlan, passcode, app, onClose, onSubmit, onComplete }: {
   currentPlan: string | null;
+  passcode: string;
+  app: string;
   onClose: () => void;
   onSubmit: (plan: string) => Promise<Record<string, unknown>>;
   onComplete: () => void;
@@ -922,6 +952,19 @@ function ChangePlanModal({ currentPlan, onClose, onSubmit, onComplete }: {
   const [plan, setPlan] = useState(currentPlan || "trial");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Plan options come from /api/admin/plans which reads the live plans
+  // table for this app — no more hardcoded list. Inactive plans are
+  // hidden so operators can't move tenants onto a discontinued tier.
+  const [planOptions, setPlanOptions] = useState<{ slug: string; name: string; max_staff: number }[] | null>(null);
+
+  useEffect(() => {
+    api<{ plans: { slug: string; name: string; max_staff: number; is_active: boolean }[] }>(
+      `/api/admin/plans?app=${app}`,
+      passcode,
+    )
+      .then(r => setPlanOptions(r.plans.filter(p => p.is_active)))
+      .catch(err => setError(err instanceof Error ? err.message : "Failed to load plans"));
+  }, [app, passcode]);
 
   async function go(e: React.FormEvent) {
     e.preventDefault();
@@ -943,15 +986,19 @@ function ChangePlanModal({ currentPlan, onClose, onSubmit, onComplete }: {
         <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
           Sets the plan field directly. Use for manual subscription handling pre-Stripe, or to reset a tenant for testing.
         </p>
-        <select value={plan} onChange={(e) => setPlan(e.target.value)} style={selectStyle}>
-          {["trial", "starter", "crew", "pro", "business"].map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
+        {planOptions === null ? (
+          <p style={{ fontSize: 12, color: "#9ca3af" }}>Loading plans…</p>
+        ) : (
+          <select value={plan} onChange={(e) => setPlan(e.target.value)} style={selectStyle}>
+            {planOptions.map(p => (
+              <option key={p.slug} value={p.slug}>{p.name} ({p.slug}) · {p.max_staff} seats</option>
+            ))}
+          </select>
+        )}
         {error && <p style={modalErrorStyle}>{error}</p>}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button type="button" onClick={onClose} style={modalGhostStyle}>Cancel</button>
-          <button type="submit" disabled={busy || plan === currentPlan} style={modalPrimaryStyle}>
+          <button type="submit" disabled={busy || plan === currentPlan || planOptions === null} style={modalPrimaryStyle}>
             {busy ? "Saving…" : "Apply"}
           </button>
         </div>
@@ -1195,6 +1242,261 @@ function CopyField({ value }: { value: string }) {
       </button>
     </div>
   );
+}
+
+// ─── Plans panel (per-app plan catalog editor) ──────────────────
+type PlanRow = {
+  slug: string;
+  name: string;
+  price_cents: number;
+  period: string;
+  max_staff: number;
+  features: Record<string, unknown>;
+  sort_order: number;
+  is_active: boolean;
+  updated_at: string;
+};
+
+function PlansPanel({ app, passcode }: { app: string; passcode: string }) {
+  const [plans, setPlans] = useState<PlanRow[] | null>(null);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    setPlans(null);
+    setError("");
+    api<{ plans: PlanRow[] }>(`/api/admin/plans?app=${app}`, passcode)
+      .then(r => setPlans(r.plans))
+      .catch(err => setError(err instanceof Error ? err.message : "Failed"));
+  }, [app, passcode, reloadKey]);
+
+  if (error) {
+    return (
+      <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "12px 16px", borderRadius: 12, fontSize: 14 }}>
+        {error}
+      </div>
+    );
+  }
+  if (plans === null) return <Loading />;
+
+  if (plans.length === 0) {
+    return (
+      <div style={{ ...cardStyle2, padding: 24, color: "#6b7280", fontSize: 14 }}>
+        No plans seeded for <strong>{app}</strong>. Apply the <code>plans</code> migration on this app&apos;s Supabase first.
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <p style={{ ...eyebrowStyle, margin: 0 }}>Plans · {app}</p>
+        <p style={{ fontSize: 13, color: "#6b7280", margin: "4px 0 0", lineHeight: 1.5 }}>
+          Edits apply to every business currently on each plan. Slug is the primary key — it cannot be changed. To retire a plan, toggle <strong>Active</strong> off (existing assignments keep working, but operators and customers can&apos;t pick it).
+        </p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 16 }}>
+        {plans.map(p => (
+          <PlanCard
+            key={p.slug}
+            initial={p}
+            app={app}
+            passcode={passcode}
+            onSaved={() => setReloadKey(k => k + 1)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlanCard({ initial, app, passcode, onSaved }: {
+  initial: PlanRow;
+  app: string;
+  passcode: string;
+  onSaved: () => void;
+}) {
+  // Local draft that the operator edits — only POSTs the diff on save.
+  const [draft, setDraft] = useState<PlanRow>(initial);
+  const [featuresText, setFeaturesText] = useState<string>(JSON.stringify(initial.features, null, 2));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  // Detect changes between draft and initial server state for the
+  // Save / Reset buttons. Features text compares post-parse so
+  // formatting whitespace doesn't count as a change.
+  const featuresParsed = (() => {
+    try { return JSON.parse(featuresText); } catch { return null; }
+  })();
+  const featuresDirty = featuresParsed !== null && JSON.stringify(featuresParsed) !== JSON.stringify(initial.features);
+  const dirty = (
+    draft.name !== initial.name ||
+    draft.price_cents !== initial.price_cents ||
+    draft.period !== initial.period ||
+    draft.max_staff !== initial.max_staff ||
+    draft.sort_order !== initial.sort_order ||
+    draft.is_active !== initial.is_active ||
+    featuresDirty
+  );
+
+  function reset() {
+    setDraft(initial);
+    setFeaturesText(JSON.stringify(initial.features, null, 2));
+    setError("");
+    setSaved(false);
+  }
+
+  function formatJson() {
+    try {
+      const parsed = JSON.parse(featuresText);
+      setFeaturesText(JSON.stringify(parsed, null, 2));
+      setError("");
+    } catch {
+      setError("Features is not valid JSON");
+    }
+  }
+
+  async function save() {
+    setBusy(true);
+    setError("");
+    if (featuresParsed === null) {
+      setError("Features is not valid JSON");
+      setBusy(false);
+      return;
+    }
+    const patch: Record<string, unknown> = {};
+    if (draft.name !== initial.name) patch.name = draft.name;
+    if (draft.price_cents !== initial.price_cents) patch.price_cents = draft.price_cents;
+    if (draft.period !== initial.period) patch.period = draft.period;
+    if (draft.max_staff !== initial.max_staff) patch.max_staff = draft.max_staff;
+    if (draft.sort_order !== initial.sort_order) patch.sort_order = draft.sort_order;
+    if (draft.is_active !== initial.is_active) patch.is_active = draft.is_active;
+    if (featuresDirty) patch.features = featuresParsed;
+
+    try {
+      const res = await fetch("/api/admin/plans/update", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${passcode}` },
+        body: JSON.stringify({ app, slug: draft.slug, patch }),
+      });
+      const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+      if (!res.ok) throw new Error((data?.error as string) || `Failed: ${res.status}`);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div style={{ ...cardStyle2, padding: 16, opacity: draft.is_active ? 1 : 0.6 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1, fontFamily: "monospace", padding: "2px 8px", background: "#f3f4f6", borderRadius: 4 }}>
+          {draft.slug}
+        </span>
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: draft.is_active ? "#15803d" : "#6b7280" }}>
+          <input
+            type="checkbox"
+            checked={draft.is_active}
+            onChange={(e) => setDraft({ ...draft, is_active: e.target.checked })}
+          />
+          Active
+        </label>
+      </div>
+
+      <PlanField label="Name" value={draft.name} onChange={v => setDraft({ ...draft, name: v })} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <PlanField
+          label="Price (cents)"
+          type="number"
+          value={String(draft.price_cents)}
+          onChange={v => setDraft({ ...draft, price_cents: Math.max(0, parseInt(v) || 0) })}
+          hint={`= ${formatPriceDisplay(draft.price_cents)}`}
+        />
+        <PlanField
+          label="Period"
+          value={draft.period}
+          onChange={v => setDraft({ ...draft, period: v })}
+          hint="month | year | once | 14 days"
+        />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <PlanField
+          label="Max staff"
+          type="number"
+          value={String(draft.max_staff)}
+          onChange={v => setDraft({ ...draft, max_staff: Math.max(0, parseInt(v) || 0) })}
+        />
+        <PlanField
+          label="Sort order"
+          type="number"
+          value={String(draft.sort_order)}
+          onChange={v => setDraft({ ...draft, sort_order: Math.max(0, parseInt(v) || 0) })}
+        />
+      </div>
+
+      <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1, marginTop: 10, marginBottom: 4 }}>
+        Features (JSON)
+      </label>
+      <textarea
+        value={featuresText}
+        onChange={(e) => setFeaturesText(e.target.value)}
+        rows={Math.min(12, Math.max(4, featuresText.split("\n").length))}
+        style={{ width: "100%", padding: "8px 10px", fontSize: 11, fontFamily: "monospace", border: "1px solid #d1d5db", borderRadius: 8, resize: "vertical", boxSizing: "border-box" }}
+      />
+      <button
+        type="button"
+        onClick={formatJson}
+        style={{ marginTop: 4, padding: "4px 10px", fontSize: 11, fontWeight: 600, color: "#374151", background: "white", border: "1px solid #e5e7eb", borderRadius: 6, cursor: "pointer" }}
+      >
+        Format JSON
+      </button>
+
+      {error && <p style={{ ...modalErrorStyle, marginTop: 10 }}>{error}</p>}
+
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 14 }}>
+        <button onClick={reset} disabled={!dirty || busy} style={{ ...modalGhostStyle, opacity: !dirty || busy ? 0.5 : 1 }}>
+          Reset
+        </button>
+        <button onClick={save} disabled={!dirty || busy} style={{ ...modalPrimaryStyle, opacity: !dirty || busy ? 0.5 : 1 }}>
+          {busy ? "Saving…" : saved ? "Saved ✓" : "Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PlanField({ label, value, onChange, type = "text", hint }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  hint?: string;
+}) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{ width: "100%", padding: "6px 10px", fontSize: 13, border: "1px solid #d1d5db", borderRadius: 8, boxSizing: "border-box" }}
+      />
+      {hint && <p style={{ fontSize: 10, color: "#9ca3af", margin: "2px 0 0" }}>{hint}</p>}
+    </div>
+  );
+}
+
+function formatPriceDisplay(cents: number): string {
+  if (!cents) return "Free";
+  const d = cents / 100;
+  return Number.isInteger(d) ? `$${d}` : `$${d.toFixed(2)}`;
 }
 
 // ─── Tiny pieces ─────────────────────────────────────────

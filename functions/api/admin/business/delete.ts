@@ -80,6 +80,11 @@ export const onRequestPost: PagesFunction<AdminEnv> = async ({ request, env }) =
 
   // Call the SQL function via PostgREST RPC. Returns one row with
   // deleted_business_id + deleted_at on success.
+  //
+  // The RPC runs inside an implicit PL/pgSQL transaction, so if any
+  // DELETE inside the function raises, the whole thing rolls back and
+  // no rows are actually removed. We can therefore tell the operator
+  // their data is intact and they should retry.
   let result;
   try {
     result = await pgrest<{ deleted_business_id: string; deleted_at: string }[]>(
@@ -92,7 +97,7 @@ export const onRequestPost: PagesFunction<AdminEnv> = async ({ request, env }) =
     );
   } catch (err) {
     return jsonResponse(500, {
-      error: `Delete failed mid-cascade: ${(err as Error).message}. Inspect the database — some rows may have been removed.`,
+      error: `Delete failed: ${(err as Error).message}. The cascade ran in a transaction and rolled back — no rows were removed. Fix the underlying issue and retry.`,
     });
   }
 

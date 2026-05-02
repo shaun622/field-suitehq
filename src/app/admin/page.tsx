@@ -420,7 +420,11 @@ function DetailPanel({
   if (error) return <div style={{ ...cardStyle2, padding: 24, color: "#b91c1c", fontSize: 14 }}>{error}</div>;
   if (!data) return null;
 
-  const { business, staff, recent_jobs, recent_clients } = data;
+  // recent_jobs / recent_clients are still fetched by the endpoint
+  // (cheap to keep around) but no longer rendered — the at-a-glance
+  // KPIs in the row up top + impersonation give faster paths to the
+  // actual data. Destructure only what we render.
+  const { business, staff } = data;
 
   return (
     <div style={{ ...cardStyle2, padding: 20, position: "sticky", top: 24 }}>
@@ -484,32 +488,11 @@ function DetailPanel({
         )}
       </Section>
 
-      <Section title={`Recent jobs (${recent_jobs.length})`}>
-        {recent_jobs.length === 0 ? <Empty /> : (
-          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {recent_jobs.map(j => (
-              <li key={j.id} style={miniRowStyle}>
-                <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>{j.title}</span>
-                <span style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase" }}>{j.status}</span>
-                <span style={{ fontSize: 11, color: "#9ca3af", fontVariantNumeric: "tabular-nums" }}>{fmtDate(j.scheduled_date || j.created_at)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
-
-      <Section title={`Recent clients (${recent_clients.length})`}>
-        {recent_clients.length === 0 ? <Empty /> : (
-          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {recent_clients.map(c => (
-              <li key={c.id} style={miniRowStyle}>
-                <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>{c.name}</span>
-                <span style={{ fontSize: 11, color: "#9ca3af", fontVariantNumeric: "tabular-nums" }}>{fmtDate(c.created_at)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+      {/* Recent jobs / Recent clients sections removed — operators
+          rarely need that detail in the admin drill-down, and the
+          relevant data is one click away by impersonating into the
+          tenant's app. The KPI numbers in the row above already give
+          the at-a-glance health signal. */}
 
       <OperatorActions
         passcode={passcode}
